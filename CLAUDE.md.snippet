@@ -1,0 +1,27 @@
+## Rules
+
+- Before building anything that depends on an external system or real data, check the
+  request against the live source (API, database or URL) and stop if the premise is false.
+- Write failing tests before implementing. Never weaken, skip or delete a test to get green.
+- Never push, merge, deploy, apply a migration, run deployment or database tools against
+  production, or read .env* unless I ask.
+- Verify library and tool behaviour from the installed code or version-pinned docs, not
+  from memory.
+- Tell me what's wrong with a request before building it, and give a recommendation, not a
+  survey.
+- Report faithfully: show failing output, name skipped steps, and don't call partial work
+  done.
+- No secrets in source. A new env var also goes in `.env.example`, and you tell me about it.
+- Branch before committing on the default branch. Commit subjects are imperative, under 72
+  characters; the body says why.
+- End every task with a one-line status of where things stand.
+
+## Workflow
+
+- New product or project idea: use the start-product skill.
+- Any feature, fix or change in an existing project, including "next": use the
+  ship-feature skill.
+- Edits that can't change behaviour (typos, comments, docs wording, formatting): make them
+  directly on a branch, without ship-feature. If unsure whether behaviour could change, use
+  ship-feature.
+- Never merge, push or deploy, even at the end of a skill.
