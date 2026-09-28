@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- `CLAUDE.md.snippet`: the rule against reading `.env*` files now excludes
+  `.env.example`, which holds placeholders only and which `start-product` copies for its
+  clean-clone check.
+
 ## 0.1.0 — 28 September 2026
 
 First release.
