@@ -77,9 +77,15 @@ these is a pass, even with exit code 0:
 If the change came from `docs/BACKLOG.md`, set that slice's `Status:` line to
 `built on <branch>` in this branch. Commit.
 
-## 4. Two independent reviews
+## 4. Independent reviews
 
-Launch the `request-reviewer` subagent **twice, in parallel, as separate invocations**.
+**Light lane.** If the change can't alter what a user sees or hears, what a model is told, or
+what is stored about a person — internal tooling, eval or test harness, price tables, scripts,
+refactors with the suite unchanged — launch `request-reviewer` **once**, not twice. Everything
+else below applies to that one review. If the project's own instructions set a lighter or
+heavier rule, theirs wins.
+
+Otherwise, launch the `request-reviewer` subagent **twice, in parallel, as separate invocations**.
 Give each one only the request file, the repository path, the branch and the base. Don't
 give either one your own summary, your view of the change, or the other's output.
 
@@ -96,6 +102,9 @@ learned nothing new about its cause. Then end with `Don't merge` and say what ke
 failing.
 
 ## 5. Check it in the running app
+
+A light-lane change with nothing a user could exercise skips this step; the verdict line says
+`not checked in the running app: no user-facing surface`.
 
 Launch the app from this branch using the recipe in `.claude/skills/run-*/SKILL.md`, or
 the README if there is no recipe. Then exercise the changed behaviour the way a user
@@ -129,11 +138,15 @@ Pick exactly one verdict, checking in this order:
    reviewer returned `QUESTION`.
 3. **`Don't merge`**: a serious finding is still open (from a reviewer or from the running
    app), the suite doesn't pass by the rules in step 3, or the repair rounds ran out.
-4. **`Ready to merge`**: none of the above. Both first-round reviews either approved or
+4. **`Ready to merge`**: none of the above. Every first-round review either approved or
    had every serious finding fixed, and the last re-review approved.
 
 If either review pass raised a serious finding or a question, the verdict can't be
 `Ready to merge` on the other pass's approval alone.
+
+The report is the evidence: commands run, test counts, findings and what was done about
+them, in your final message, plus a short `.md` beside the work only if the project asks for
+one. Don't archive full suite logs or build evidence folders by default.
 
 End with exactly this line, and nothing after it:
 

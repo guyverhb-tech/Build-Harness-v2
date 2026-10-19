@@ -21,8 +21,11 @@
 2. Makes a new branch and writes tests that fail first.
 3. Builds the change until the full test suite, typecheck and lint pass.
 4. Has two independent reviewers check the change against your request, and fixes what
-   they can reproduce. It allows at most two repair rounds.
-5. Launches the app and tries the change the way a user would.
+   they can reproduce. It allows at most two repair rounds. A light-lane change, one that
+   can't alter what a user sees or hears, what a model is told, or what is stored about a
+   person, gets one reviewer instead of two.
+5. Launches the app and tries the change the way a user would. A light-lane change with
+   nothing a user could exercise skips this step, and the verdict says so.
 6. Stops with a one-line verdict. Nothing is merged, pushed or deployed.
 
 When you're happy, merge the branch yourself. The next "next" picks up from there.
@@ -31,7 +34,7 @@ When you're happy, merge the branch yourself. The next "next" picks up from ther
 
 | Verdict | What it means | What to do |
 | --- | --- | --- |
-| **Ready to merge** | Tests pass for real, both reviews came back clean (or their serious findings were fixed and re-reviewed), and the live data matched. | Look at the branch if you like, then merge it. |
+| **Ready to merge** | Tests pass for real, every review came back clean (or their serious findings were fixed and re-reviewed), and the live data matched. | Look at the branch if you like, then merge it. |
 | **Don't merge** | A serious problem is still open, the tests don't genuinely pass, or two repair rounds weren't enough. The line says what's wrong. | Read the problem. Ask for a fix in a new request, or drop the branch. |
 | **Question** | The request is wrong or unclear about the real system, or a reviewer asked a question only you can answer. | Answer it, usually by correcting or narrowing the request, then ask again. |
 | **Blocked** | Something the change depends on couldn't be reached, so it can't be checked against the real thing. | Make the service reachable (network, credentials, the service being up) and run it again. |

@@ -12,8 +12,8 @@ Describe what you want. There are no commands to remember.
   small slices, and builds the first slice end to end.
 - In an existing project, say **"add …"**, **"fix …"** or **"next"** and `ship-feature`
   runs. It checks the request against the real data source, writes failing tests, builds
-  the change on a new branch, gets two independent reviews, tries the change in the
-  running app, and stops.
+  the change on a new branch, gets two independent reviews (one for internal changes
+  nobody sees), tries the change in the running app, and stops.
 
 Each run ends in a one-line verdict: **Ready to merge**, **Don't merge**, **Question** or
 **Blocked**, with the problem in plain words. What happens next is your call. Typing
