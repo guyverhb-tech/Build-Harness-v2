@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Install the start-product and ship-feature skills and the request-reviewer agent.
+# Install the start-product, ship-feature and red-team skills and the request-reviewer agent.
 #
 #   ./install.sh           install; refuse if a file you already have would change
 #   ./install.sh --force   replace changed files, backing each one up first
@@ -27,7 +27,7 @@ fi
 
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEST="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
-FILES="skills/start-product/SKILL.md skills/ship-feature/SKILL.md agents/request-reviewer.md"
+FILES="skills/start-product/SKILL.md skills/ship-feature/SKILL.md skills/red-team/SKILL.md agents/request-reviewer.md"
 MIN_VERSION="2.1.271"
 
 # True when version $1 is at least version $2 (dotted numbers only).
@@ -99,8 +99,12 @@ fi
 echo
 echo "Last step, by hand: this script does not edit your CLAUDE.md."
 echo "Paste the lines between the markers into $DEST/CLAUDE.md:"
-if [ -f "$DEST/CLAUDE.md" ] && grep -q "use the start-product skill" "$DEST/CLAUDE.md"; then
-  echo "(Your CLAUDE.md already seems to have them. Check it matches.)"
+if [ -f "$DEST/CLAUDE.md" ]; then
+  if grep -q "use the red-team skill" "$DEST/CLAUDE.md"; then
+    echo "(Your CLAUDE.md already seems to have them. Check it matches.)"
+  elif grep -q "use the start-product skill" "$DEST/CLAUDE.md"; then
+    echo "(Your CLAUDE.md has an earlier version of these lines: add the red-team line, and check the rest matches.)"
+  fi
 fi
 echo "----- paste from here -----"
 cat "$SRC/CLAUDE.md.snippet"

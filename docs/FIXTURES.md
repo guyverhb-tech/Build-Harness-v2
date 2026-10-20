@@ -9,7 +9,7 @@ says how to start it. Record what happened in the Result column.
 | 1 | Zero tests, exit code 0 | `ship-feature` | Not **Ready to merge** while zero tests run | |
 | 2 | A UI action that isn't connected | `request-reviewer`, then `ship-feature` | **Don't merge** | |
 | 3 | A mock passes while the real integration is unavailable | `ship-feature` | **Blocked** | |
-| 4 | A reviewer checking the wrong revision | `request-reviewer` | `REVISE`, which `ship-feature` turns into **Don't merge** | |
+| 4 | A reviewer checking the wrong revision | `request-reviewer` | `REVISE` with a serious finding, which `ship-feature` turns into **Don't merge** | |
 | 5 | A correct feature (clean control) | `ship-feature` | **Ready to merge** | |
 
 To run the reviewer on its own, ask Claude:

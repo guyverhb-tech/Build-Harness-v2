@@ -94,12 +94,39 @@ give either one your own summary, your view of the change, or the other's output
 - A reviewer verdict of `QUESTION`, or a reviewer saying the request is wrong about the
   real system, is not yours to fix. Stop and end with `Question`.
 - A concern without a reproduction goes in your report. Don't act on it.
+- A requirement the review marks `missing` or `partly` under REQUEST COVERAGE counts as a
+  serious finding. Its reproduction is the requirement's text set against what the diff
+  does. Build it, or if the request itself should change, end with `Question`. The
+  exception is a step the request puts after review, such as pushing, opening a PR or a
+  remote CI run: note it in your report and carry on.
+- A review **approves** when it leaves no serious finding open by these rules, and its
+  REAL SYSTEM line says the check passed or didn't apply (a step after review, as above,
+  aside). That holds whether its verdict line says `SHIP` or `REVISE`. A real-system check
+  it couldn't make because the source was unreachable is `Blocked`, in step 7. One it
+  skipped for any other reason means the review doesn't approve: give the next pass what
+  it needs to make the check, within the repair-round limit.
 
 **Repair rounds.** A repair round is: fix, re-run the full suite, then one fresh
 `request-reviewer` pass over the fixed branch. Two rounds at most, counting any from
 step 5. Stop sooner if a round ends with the same failure as the round before and you
 learned nothing new about its cause. Then end with `Don't merge` and say what keeps
 failing.
+
+**Fix-only review.** If the second round raises new serious findings, you may fix them
+and run one last check of that final fix alone. If any second-round finding repeats an
+earlier failure, the stop rule above applies instead, and there is no fix-only review. The
+check:
+- Re-run the full suite.
+- Re-run the step 5 check if a finding came from the running app, or if the fix changes
+  anything a user exercises.
+- Launch one `request-reviewer` pass. Give it:
+  - a request file holding the findings verbatim, which says the reviewer judges only
+    whether the fix resolves them and what the fix breaks;
+  - the original request file, marked as context, not a checklist;
+  - the fix's commits, with the commit before the first of them as the base.
+
+This isn't a round, and there is only one. If it approves, the report says the last fix had
+a fix-only review, not a full one. If it doesn't, end with `Don't merge`.
 
 ## 5. Check it in the running app
 
@@ -111,7 +138,72 @@ the README if there is no recipe. Then exercise the changed behaviour the way a 
 would, through the app's real interface:
 - open the page or call the route with `curl` for a web app;
 - run the command for a CLI;
-- drive a headless browser only if the project already has one set up.
+- when the change is in what a page renders or does in the browser, use a headless browser
+  run from Bash under a hard time limit. Use the project's own Playwright if it has one;
+  otherwise use Playwright's headless shell, if it is installed. The lookup below covers
+  macOS and Linux; anywhere else, use the project's own Playwright:
+  ```sh
+  HS=$(find ${PLAYWRIGHT_BROWSERS_PATH:+"$PLAYWRIGHT_BROWSERS_PATH"} ~/Library/Caches/ms-playwright "${XDG_CACHE_HOME:-$HOME/.cache}/ms-playwright" -path '*chromium_headless_shell-*' -name chrome-headless-shell -type f 2>/dev/null | sort | tail -1)
+  perl -e 'alarm shift; exec @ARGV or die "exec failed: $!\n"' 60 "$HS" --timeout=15000 --virtual-time-budget=5000 --window-size=390,844 --user-data-dir=<scratch>/hs --dump-dom '<url>'
+  rm -f <scratch>/shot.png; perl -e 'alarm shift; exec @ARGV or die "exec failed: $!\n"' 60 "$HS" --timeout=15000 --virtual-time-budget=5000 --window-size=390,844 --user-data-dir=<scratch>/hs --screenshot=<scratch>/shot.png '<url>'
+  ```
+  - Run the `HS=` line and the browser line in the same Bash call. Shell variables don't
+    survive between calls, and with an empty `$HS` the browser line fails with
+    "exec failed" (exit 2).
+  - The `perl` alarm kills the browser after 60 s (exit 142). `--timeout` alone stops a
+    page load but not a script that never yields, and the Bash tool moves a long command
+    to the background instead of killing it.
+  - `--virtual-time-budget=5000` gives timers and fetches five seconds of page time before
+    the DOM is dumped or the screenshot taken. Without it, both are taken at the load
+    event, before content that arrives later. A page that holds a connection open
+    (EventSource, long polling, a request that never returns) never uses up its virtual
+    time. For such a page, use the `playwright-core` route below.
+  - Read the screenshot to check layout.
+  - For clicks, form input, a page behind a login, or waiting on a particular element, use
+    `playwright-core`.
+    - Run `npm install playwright-core` in a scratch folder. It downloads no browser.
+    - Save the script below there as `check.mjs`, filling in the interaction and the
+      element to wait for.
+    - Launch it in the same command as the lookup, so the browser path reaches it:
+      ```sh
+      HS=$(find ${PLAYWRIGHT_BROWSERS_PATH:+"$PLAYWRIGHT_BROWSERS_PATH"} ~/Library/Caches/ms-playwright "${XDG_CACHE_HOME:-$HOME/.cache}/ms-playwright" -path '*chromium_headless_shell-*' -name chrome-headless-shell -type f 2>/dev/null | sort | tail -1) perl -e 'alarm shift; exec @ARGV or die "exec failed: $!\n"' 60 node <scratch>/pw/check.mjs '<url>'
+      ```
+      ```js
+      if (!process.env.HS) {
+        console.error("No headless shell path in HS: the lookup found none, or it ran in a different command from node");
+        process.exit(2);
+      }
+      const { chromium } = await import("playwright-core");
+      const browser = await chromium.launch({ executablePath: process.env.HS });
+      try {
+        const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+        await page.goto(process.argv[2]);
+        // The interaction and the wait for this change, for example:
+        // await page.fill('input[name="password"]', "<password>"); await page.click("button");
+        // await page.waitForSelector("<what the change should show>", { timeout: 15000 });
+        console.log(await page.content());
+      } finally {
+        await browser.close();
+      }
+      ```
+  - Never download a browser (`npx playwright install`) without asking the user first: it
+    takes several hundred megabytes. If there is no headless shell and no project
+    Playwright, check what `curl` can see, and record that the rendered page was not
+    checked.
+
+**Reading a failed browser check.** Decide by cause:
+- The app isn't answering (`curl` gets no response), or the browser can't start ("exec
+  failed", "No headless shell path in HS", or no headless shell found): record `not
+  checked in the running app` and why. It isn't a finding against the change.
+- The page loads but never finishes: exit 142, "Page load timed out", or an empty
+  `<body>` while `curl` gets the page. Retry once with `playwright-core`, waiting
+  explicitly for what the change should show. If it still hangs, that's a serious
+  finding, since a user's browser would hang too.
+- The page loads and shows the change wrong or missing: a serious finding.
+
+Never use Claude in Chrome, or any tool that drives the user's own browser, for this step.
+Its calls can hang with no timeout, and it can act before a page has hydrated and report a
+failure that isn't there.
 
 Record what you did and what you observed, with the commands and their output. Stop the
 app when you're done.
@@ -137,9 +229,11 @@ Pick exactly one verdict, checking in this order:
 2. **`Question`**: the request is wrong or ambiguous about the real system, or either
    reviewer returned `QUESTION`.
 3. **`Don't merge`**: a serious finding is still open (from a reviewer or from the running
-   app), the suite doesn't pass by the rules in step 3, or the repair rounds ran out.
+   app), the suite doesn't pass by the rules in step 3, or the repair rounds ran out with a
+   serious finding the fix-only review didn't clear.
 4. **`Ready to merge`**: none of the above. Every first-round review either approved or
-   had every serious finding fixed, and the last re-review approved.
+   had every serious finding fixed, and the last re-review, or the fix-only review,
+   approved.
 
 If either review pass raised a serious finding or a question, the verdict can't be
 `Ready to merge` on the other pass's approval alone.
