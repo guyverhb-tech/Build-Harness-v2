@@ -1,6 +1,6 @@
 # Build Harness v2
 
-Two skills, one reviewer subagent and a few rules on top of stock Claude Code, for solo
+Three skills, one reviewer subagent and a few rules on top of stock Claude Code, for solo
 builders who don't review code line by line.
 
 ## How you use it
@@ -14,10 +14,15 @@ Describe what you want. There are no commands to remember.
   runs. It checks the request against the real data source, writes failing tests, builds
   the change on a new branch, gets two independent reviews (one for internal changes
   nobody sees), tries the change in the running app, and stops.
+- Before you show a product, demo or site to its audience, say **"red team it"** and
+  `red-team` runs. Three attackers work in parallel: one on the claims and method, one on
+  security and engineering, and one reading the product as its audience. It checks every
+  serious finding itself, then reports ranked fixes without changing anything. The fixes
+  go through `ship-feature`.
 
-Each run ends in a one-line verdict: **Ready to merge**, **Don't merge**, **Question** or
+Each `start-product` or `ship-feature` run ends in a one-line verdict: **Ready to merge**, **Don't merge**, **Question** or
 **Blocked**, with the problem in plain words. What happens next is your call. Typing
-`/start-product` or `/ship-feature` still works if you'd rather.
+`/start-product`, `/ship-feature` or `/red-team` still works if you'd rather.
 
 The everyday flow, the verdicts and troubleshooting are in
 [docs/USER-GUIDE.md](docs/USER-GUIDE.md).
@@ -30,7 +35,7 @@ cd Build-Harness-v2
 ./install.sh
 ```
 
-`install.sh` copies the two skills and the reviewer into `~/.claude`. It won't overwrite
+`install.sh` copies the three skills and the reviewer into `~/.claude`. It won't overwrite
 files you already have unless you run `./install.sh --force`, and then it backs them up
 first. It never edits your `CLAUDE.md`. Instead it prints the lines from
 [CLAUDE.md.snippet](CLAUDE.md.snippet) for you to paste into `~/.claude/CLAUDE.md`. Start
@@ -39,6 +44,17 @@ a new Claude Code session afterwards.
 ## Requirements
 
 Claude Code 2.1.271 or later, with a Claude subscription or API access.
+
+Optional: Playwright's headless shell, for checking pages as a browser renders them. Install
+it with `npx playwright install --only-shell chromium`, or use a project's own Playwright.
+Without it, the running-app check uses `curl` only and says so. Nothing here downloads a
+browser for you.
+
+## Checks
+
+`./tests/check.sh` checks the installer, the skills' frontmatter and the running-app
+browser recipe. The browser checks are skipped, and say so, where the headless shell isn't
+installed.
 
 ## Why it's this small
 
@@ -69,7 +85,9 @@ This is a small sample from a single repository, not a benchmark.
 
 - It never merges, pushes or deploys. You do those.
 - The running-app check skips anything that writes data unless the app runs against local
-  or test storage.
+  or test storage. It never drives your own browser.
+- `red-team` runs before a first showing or a release that changes the headline claims, or
+  when you ask. It doesn't run on every change.
 - Skills start automatically by matching what you say against their descriptions, and
   that can miss. If it does, name the skill ("use ship-feature") or type the slash
   command.

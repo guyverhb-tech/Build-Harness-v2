@@ -1,0 +1,11 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Late content</title>
+<body>
+<p id="status">at-load</p>
+<script>
+  setTimeout(function () {
+    document.getElementById("status").textContent = "after-load";
+  }, 500);
+</script>
+</body>

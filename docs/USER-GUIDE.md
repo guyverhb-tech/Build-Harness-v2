@@ -21,21 +21,38 @@
 2. Makes a new branch and writes tests that fail first.
 3. Builds the change until the full test suite, typecheck and lint pass.
 4. Has two independent reviewers check the change against your request, and fixes what
-   they can reproduce. It allows at most two repair rounds. A light-lane change, one that
-   can't alter what a user sees or hears, what a model is told, or what is stored about a
-   person, gets one reviewer instead of two.
-5. Launches the app and tries the change the way a user would. A light-lane change with
-   nothing a user could exercise skips this step, and the verdict says so.
+   they can reproduce. A requirement a reviewer marks as missing counts as a problem to
+   fix. It allows at most two repair rounds. If the last round finds something new, it may
+   fix that and have one reviewer check just the fix. A light-lane change, one that can't
+   alter what a user sees or hears, what a model is told, or what is stored about a person,
+   gets one reviewer instead of two.
+5. Launches the app and tries the change the way a user would: `curl` for routes, and a
+   headless browser under a hard time limit for what a page renders. It never drives your
+   own browser. A light-lane change with nothing a user could exercise skips this step,
+   and the verdict says so.
 6. Stops with a one-line verdict. Nothing is merged, pushed or deployed.
 
 When you're happy, merge the branch yourself. The next "next" picks up from there.
+
+**Before you show it.** When a product, demo or site is about to go in front of its
+audience for the first time, or a release will change its headline claims or how people
+get in, say "red team it". The `red-team` skill:
+1. Reads the product, its claims and the code behind each one.
+2. Builds the pages the audience will see in a clean copy of the deployed branch, so your
+   working copy is untouched.
+3. Sends three attackers in parallel: one recomputes every headline number and looks for
+   method problems, one probes security and engineering, and one reads the pages as the
+   audience would.
+4. Re-runs the evidence for every serious finding itself, and writes a ranked report
+   outside the repository.
+5. Changes nothing. Ask for the fixes you want, and each one goes through `ship-feature`.
 
 ## Verdicts
 
 | Verdict | What it means | What to do |
 | --- | --- | --- |
 | **Ready to merge** | Tests pass for real, every review came back clean (or their serious findings were fixed and re-reviewed), and the live data matched. | Look at the branch if you like, then merge it. |
-| **Don't merge** | A serious problem is still open, the tests don't genuinely pass, or two repair rounds weren't enough. The line says what's wrong. | Read the problem. Ask for a fix in a new request, or drop the branch. |
+| **Don't merge** | A serious problem is still open, the tests don't genuinely pass, or two repair rounds (and the final check of the last fix) weren't enough. The line says what's wrong. | Read the problem. Ask for a fix in a new request, or drop the branch. |
 | **Question** | The request is wrong or unclear about the real system, or a reviewer asked a question only you can answer. | Answer it, usually by correcting or narrowing the request, then ask again. |
 | **Blocked** | Something the change depends on couldn't be reached, so it can't be checked against the real thing. | Make the service reachable (network, credentials, the service being up) and run it again. |
 
@@ -50,8 +67,8 @@ State: built and tested; checked in the running app; not merged; not deployed.
 - **built and tested**: the branch exists and its tests genuinely ran and passed.
   `nothing built` means it stopped before writing code, usually on a Question.
 - **checked in the running app**: the app was launched and the change tried by hand.
-  `not checked in the running app: <why>` means it couldn't launch, or the change writes
-  data and the app wasn't on local or test storage. The verdict can still be Ready to
+  `not checked in the running app: <why>` means it couldn't launch, no headless browser
+  was available, or the change writes data and the app wasn't on local or test storage. The verdict can still be Ready to
   merge, but try it yourself before merging.
 - **not merged; not deployed**: always true. Merging and deploying are yours.
 
@@ -64,7 +81,8 @@ could change behaviour, it goes through `ship-feature`.
 ## Troubleshooting
 
 **A skill didn't trigger.**
-- Run `/skills` in a session and check that `start-product` and `ship-feature` are listed.
+- Run `/skills` in a session and check that `start-product`, `ship-feature` and `red-team`
+  are listed.
 - If they aren't, check the files exist at `~/.claude/skills/<name>/SKILL.md`, and start a
   new session; skills load when a session starts.
 - Check that the `CLAUDE.md.snippet` lines are in `~/.claude/CLAUDE.md`.
@@ -77,6 +95,12 @@ The verdict will say `not checked in the running app`.
 - Check that every variable in `.env.example` has a real value in your local env file.
 - Try the launch command yourself. If the recipe is out of date, Claude Code's built-in
   `/run-skill-generator` can record it again.
+
+**Rendered pages aren't checked.**
+The verdict says `not checked in the running app` when the change is in what a page shows
+and no headless browser is installed. Install Playwright's headless shell with
+`npx playwright install --only-shell chromium` (several hundred megabytes), or add
+Playwright to the project. `ship-feature` won't download a browser itself.
 
 **Tests "pass" with zero tests.**
 A run that collected no tests is not a pass, and `ship-feature` won't report it as one.
