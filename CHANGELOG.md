@@ -20,9 +20,9 @@
   - The light-lane rule says a project's own rule covers the number of reviews, and that
     step 6 runs in both lanes and under any project rule.
   - Three rules that had lived only in an installed copy are in the repo, so an install
-    can't drop them: a change to what a model is told, its output schema or its scoring
-    follows the design-eval rules, and writes `docs/EVAL.md` first with the `design-eval`
-    skill when that skill is installed; a change to what a user sees or hears gets an end-to-end
+    can't drop them: when a `design-eval` skill is installed, a change to what a model is
+    told, its output schema or its scoring follows that skill's rules and writes
+    `docs/EVAL.md` first; a change to what a user sees or hears gets an end-to-end
     walkthrough in the request file, and ends in `Question` if it would disappoint; tests
     that read the product's own stored content take a fixture from the real file.
   - `tests/check.sh` checks each of these.
