@@ -18,7 +18,7 @@ bad()  { n=$((n + 1)); fail=$((fail + 1)); echo "not ok $n - $1"; [ -n "${2:-}" 
 skipped() { n=$((n + 1)); skip=$((skip + 1)); echo "ok $n - $1 # SKIP $2"; }
 
 SKILL="$ROOT/skills/ship-feature/SKILL.md"
-EXPECTED="skills/start-product/SKILL.md skills/ship-feature/SKILL.md skills/red-team/SKILL.md agents/request-reviewer.md"
+EXPECTED="skills/start-product/SKILL.md skills/ship-feature/SKILL.md skills/red-team/SKILL.md skills/design-eval/SKILL.md agents/request-reviewer.md"
 
 # --- Installer ---------------------------------------------------------------------------
 
@@ -44,14 +44,18 @@ fi
 
 # The CLAUDE.md the installer finds: an earlier snippet (copied from main before the
 # red-team line existed) and the current one.
-mkdir -p "$WORK/upgrade" "$WORK/current"
+mkdir -p "$WORK/upgrade" "$WORK/upgrade2" "$WORK/current"
 cp "$ROOT/tests/fixtures/CLAUDE.md.snippet-before-red-team" "$WORK/upgrade/CLAUDE.md"
+cp "$ROOT/tests/fixtures/CLAUDE.md.snippet-before-design-eval" "$WORK/upgrade2/CLAUDE.md"
 cp "$ROOT/CLAUDE.md.snippet" "$WORK/current/CLAUDE.md"
 out="$(CLAUDE_CONFIG_DIR="$WORK/upgrade" "$ROOT/install.sh" 2>&1)"
 if printf '%s' "$out" | grep -q 'red-team line'; then ok "install.sh tells an upgrading user to add the red-team line"
 else bad "install.sh tells an upgrading user to add the red-team line" "$(printf '%s\n' "$out" | grep '^(' )"; fi
+out="$(CLAUDE_CONFIG_DIR="$WORK/upgrade2" "$ROOT/install.sh" 2>&1)"
+if printf '%s' "$out" | grep -q 'design-eval line' && ! printf '%s' "$out" | grep -q 'red-team line'; then ok "install.sh tells a user with the red-team line to add the design-eval line"
+else bad "install.sh tells a user with the red-team line to add the design-eval line" "$(printf '%s\n' "$out" | grep '^(' )"; fi
 out="$(CLAUDE_CONFIG_DIR="$WORK/current" "$ROOT/install.sh" 2>&1)"
-if printf '%s' "$out" | grep -q 'already seems to have them' && ! printf '%s' "$out" | grep -q 'red-team line'; then
+if printf '%s' "$out" | grep -q 'already seems to have them' && ! printf '%s' "$out" | grep -q -E 'red-team line|design-eval line'; then
   ok "install.sh says a current CLAUDE.md already has the lines"
 else bad "install.sh says a current CLAUDE.md already has the lines" "$(printf '%s\n' "$out" | grep '^(' )"; fi
 
@@ -244,11 +248,11 @@ fi
 
 # Rules that lived only in an installed copy, ported so an install can't drop them.
 step1f="$(section "$SKILL" "Check the premise against the live source" | flat)"
-if printf '%s' "$step1f" | grep -q 'If a `design-eval` skill is installed and the change touches what a model is told' \
+if printf '%s' "$step1f" | grep -q 'If the change touches what a model is told, its output schema, or how its output is scored, the `design-eval` skill.s rules apply' \
    && printf '%s' "$step1f" | grep -q 'pinned by hash' && printf '%s' "$step1f" | grep -q 'docs/EVAL.md'; then
-  ok "ship-feature step 1 applies design-eval, when that skill is installed, to a change in what a model is told"
+  ok "ship-feature step 1 applies design-eval's rules to a change in what a model is told"
 else
-  bad "ship-feature step 1 applies design-eval, when that skill is installed, to a change in what a model is told" "design-eval mentions in step 1: $(printf '%s' "$step1f" | grep -o 'design-eval' | wc -l | tr -d ' ')"
+  bad "ship-feature step 1 applies design-eval's rules to a change in what a model is told" "$(printf '%s' "$step1f" | grep -o '.\{0,30\}design-eval.\{0,40\}' | head -1)"
 fi
 
 if printf '%s' "$step1f" | grep -q 'a walkthrough of what the user will meet, end to end and in order' \
@@ -281,16 +285,58 @@ fi
 # --- start-product: ported rule ----------------------------------------------------------
 
 # A rule that lived only in an installed copy: a slice that depends on a model's reading or
-# judgement runs design-eval first. The skill itself isn't shipped, so it applies when installed.
+# judgement runs design-eval first.
 SP="$ROOT/skills/start-product/SKILL.md"
 backlog="$(section "$SP" 'Write `docs/BACKLOG.md`' | flat)"
-if printf '%s' "$backlog" | grep -q 'If a `design-eval` skill is installed and slice 1, or any slice in the backlog, depends on a model.s reading or judgement' \
+if printf '%s' "$backlog" | grep -q 'If slice 1, or any slice in the backlog, depends on a model.s reading or judgement' \
+   && printf '%s' "$backlog" | grep -q 'run the `design-eval` skill first' \
    && printf '%s' "$backlog" | grep -q 'commit its `docs/EVAL.md` with the slice' \
    && printf '%s' "$backlog" | grep -q 'No prompt is written before that file exists'; then
-  ok "start-product runs design-eval, when installed, before a slice that depends on a model's judgement"
+  ok "start-product runs design-eval before a slice that depends on a model's judgement"
 else
-  bad "start-product runs design-eval, when installed, before a slice that depends on a model's judgement" "design-eval mentions in the backlog step: $(printf '%s' "$backlog" | grep -o 'design-eval' | wc -l | tr -d ' ')"
+  bad "start-product runs design-eval before a slice that depends on a model's judgement" "design-eval mentions in the backlog step: $(printf '%s' "$backlog" | grep -o 'design-eval' | wc -l | tr -d ' ')"
 fi
+
+# --- design-eval ships with the harness ---------------------------------------------------
+
+DE="$ROOT/skills/design-eval/SKILL.md"
+
+# The skill the other two call for is installed with them, named in the snippet, and invoked
+# without a condition on its presence.
+if [ -f "$DE" ] && grep -q 'skills/design-eval/SKILL.md' "$ROOT/install.sh" \
+   && grep -q 'use the design-eval skill' "$ROOT/CLAUDE.md.snippet" \
+   && ! grep -rq 'If a `design-eval` skill is installed' "$ROOT/skills"; then
+  ok "design-eval is shipped: installed, in the snippet, and invoked by the other skills without a guard"
+else
+  bad "design-eval is shipped: installed, in the snippet, and invoked by the other skills without a guard" "file: $([ -f "$DE" ] && echo yes || echo no); installer: $(grep -c 'skills/design-eval' "$ROOT/install.sh"); snippet: $(grep -c 'use the design-eval skill' "$ROOT/CLAUDE.md.snippet"); guards left: $(grep -r 'If a `design-eval` skill is installed' "$ROOT/skills" | wc -l | tr -d ' ')"
+fi
+
+# A light lane for output that is only shown, and the paired tests named.
+if [ -f "$DE" ] && flat < "$DE" | grep -q 'Light lane' && flat < "$DE" | grep -q 'sections 1, 5 and 7' \
+   && section "$DE" "Size the evaluation for the decision" | flat | grep -q 'McNemar' \
+   && section "$DE" "Size the evaluation for the decision" | flat | grep -q 'paired bootstrap'; then
+  ok "design-eval has a light lane and names its paired tests"
+else
+  bad "design-eval has a light lane and names its paired tests" "$([ -f "$DE" ] && flat < "$DE" | grep -o 'Light lane.\{0,60\}' || echo 'no skills/design-eval/SKILL.md')"
+fi
+
+# Each rule in the section it belongs to: a taxonomy fitted to the task, the checker guard beside
+# fakes and real runs, and the triage question in red-team's report step, not the stopping rule.
+if [ -f "$DE" ] && section "$DE" "An error taxonomy before any change" | flat | grep -q 'fitted to the task' \
+   && section "$DE" "Run records" | flat | grep -q 'a guard set above it' \
+   && ! section "$DE" "The question each output answers" | flat | grep -q 'a guard set above it' \
+   && ! section "$DE" "The stopping rule" | flat | grep -q 'thirty seconds' \
+   && section "$ROOT/skills/red-team/SKILL.md" "Report" | flat | grep -q 'thirty seconds or fifteen minutes'; then
+  ok "design-eval's rules sit in their own sections, and the triage question is in red-team's report"
+else
+  bad "design-eval's rules sit in their own sections, and the triage question is in red-team's report" "$([ -f "$DE" ] && printf 'taxonomy fitted: %s; guard in 7: %s; guard in 1: %s; triage in 9: %s; triage in red-team: %s' "$(section "$DE" 'An error taxonomy before any change' | flat | grep -c 'fitted to the task')" "$(section "$DE" 'Run records' | flat | grep -c 'a guard set above it')" "$(section "$DE" 'The question each output answers' | flat | grep -c 'a guard set above it')" "$(section "$DE" 'The stopping rule' | flat | grep -c 'thirty seconds')" "$(section "$ROOT/skills/red-team/SKILL.md" 'Report' | flat | grep -c 'thirty seconds or fifteen minutes')" || echo 'no skills/design-eval/SKILL.md')"
+fi
+
+# Skills and the reviewer carry their lessons without the incidents: no "(Month YYYY)" and no
+# personal project named beside one.
+dated="$(grep -n -E '\((January|February|March|April|May|June|July|August|September|October|November|December) 20[0-9]{2}\)' "$ROOT"/skills/*/SKILL.md "$ROOT"/agents/*.md 2>/dev/null)"
+if [ -z "$dated" ]; then ok "skills and the reviewer name no dated incident"
+else bad "skills and the reviewer name no dated incident" "$dated"; fi
 
 # --- Published files ---------------------------------------------------------------------
 
