@@ -109,6 +109,11 @@ give either one your own summary, your view of the change, or the other's output
   does. Build it, or if the request itself should change, end with `Question`. The
   exception is a step the request puts after review, such as pushing, opening a PR or a
   remote CI run: note it in your report and carry on.
+- A review whose REQUEST COVERAGE line doesn't list the invariant hasn't tested it, and
+  doesn't approve: launch it once more with the same brief. If the second one also leaves
+  it out, end with `Don't merge` and say that the reviewer in use doesn't report on the
+  invariant. This holds for every pass in this step: first reviews, repair re-reviews and
+  the fix-only review.
 - A review **approves** when it leaves no serious finding open by these rules, and its
   REAL SYSTEM line says the check passed or didn't apply (a step after review, as above,
   aside). That holds whether its verdict line says `SHIP` or `REVISE`. A real-system check
