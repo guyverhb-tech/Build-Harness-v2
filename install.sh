@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Install the start-product, ship-feature and red-team skills and the request-reviewer agent.
+# Install the start-product, ship-feature, red-team and design-eval skills and the request-reviewer agent.
 #
 #   ./install.sh           install; refuse if a file you already have would change
 #   ./install.sh --force   replace changed files, backing each one up first

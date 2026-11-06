@@ -29,7 +29,7 @@ Describe what you want. There are no commands to remember.
 
 Each `start-product` or `ship-feature` run ends in a one-line verdict: **Ready to merge**, **Don't merge**, **Question** or
 **Blocked**, with the problem in plain words. What happens next is your call. Typing
-`/start-product`, `/ship-feature` or `/red-team` still works if you'd rather.
+`/start-product`, `/ship-feature`, `/red-team` or `/design-eval` still works if you'd rather.
 
 The everyday flow, the verdicts and troubleshooting are in
 [docs/USER-GUIDE.md](docs/USER-GUIDE.md).

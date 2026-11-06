@@ -304,20 +304,22 @@ DE="$ROOT/skills/design-eval/SKILL.md"
 # The skill the other two call for is installed with them, named in the snippet, and invoked
 # without a condition on its presence.
 if [ -f "$DE" ] && grep -q 'skills/design-eval/SKILL.md' "$ROOT/install.sh" \
+   && sed -n '2,9p' "$ROOT/install.sh" | grep -q 'design-eval' \
    && grep -q 'use the design-eval skill' "$ROOT/CLAUDE.md.snippet" \
    && ! grep -rq 'If a `design-eval` skill is installed' "$ROOT/skills"; then
   ok "design-eval is shipped: installed, in the snippet, and invoked by the other skills without a guard"
 else
-  bad "design-eval is shipped: installed, in the snippet, and invoked by the other skills without a guard" "file: $([ -f "$DE" ] && echo yes || echo no); installer: $(grep -c 'skills/design-eval' "$ROOT/install.sh"); snippet: $(grep -c 'use the design-eval skill' "$ROOT/CLAUDE.md.snippet"); guards left: $(grep -r 'If a `design-eval` skill is installed' "$ROOT/skills" | wc -l | tr -d ' ')"
+  bad "design-eval is shipped: installed, in the snippet, and invoked by the other skills without a guard" "file: $([ -f "$DE" ] && echo yes || echo no); installer: $(grep -c 'skills/design-eval' "$ROOT/install.sh"); help text: $(sed -n '2,9p' "$ROOT/install.sh" | grep -c 'design-eval'); snippet: $(grep -c 'use the design-eval skill' "$ROOT/CLAUDE.md.snippet"); guards left: $(grep -r 'If a `design-eval` skill is installed' "$ROOT/skills" | wc -l | tr -d ' ')"
 fi
 
-# A light lane for output that is only shown, and the paired tests named.
+# A light lane for output that is only shown, honoured by the closing gate, and the paired tests named.
 if [ -f "$DE" ] && flat < "$DE" | grep -q 'Light lane' && flat < "$DE" | grep -q 'sections 1, 5 and 7' \
+   && awk '/^## Output/ { on = 1 } on' "$DE" | flat | grep -qi 'light lane' \
    && section "$DE" "Size the evaluation for the decision" | flat | grep -q 'McNemar' \
    && section "$DE" "Size the evaluation for the decision" | flat | grep -q 'paired bootstrap'; then
-  ok "design-eval has a light lane and names its paired tests"
+  ok "design-eval has a light lane, honoured by its Output gate, and names its paired tests"
 else
-  bad "design-eval has a light lane and names its paired tests" "$([ -f "$DE" ] && flat < "$DE" | grep -o 'Light lane.\{0,60\}' || echo 'no skills/design-eval/SKILL.md')"
+  bad "design-eval has a light lane, honoured by its Output gate, and names its paired tests" "$([ -f "$DE" ] && flat < "$DE" | grep -o 'Light lane.\{0,60\}' || echo 'no skills/design-eval/SKILL.md')"
 fi
 
 # Each rule in the section it belongs to: a taxonomy fitted to the task, the checker guard beside

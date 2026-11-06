@@ -110,8 +110,8 @@ could change behaviour, it goes through `ship-feature`.
 ## Troubleshooting
 
 **A skill didn't trigger.**
-- Run `/skills` in a session and check that `start-product`, `ship-feature` and `red-team`
-  are listed.
+- Run `/skills` in a session and check that `start-product`, `ship-feature`, `red-team` and
+  `design-eval` are listed.
 - If they aren't, check the files exist at `~/.claude/skills/<name>/SKILL.md`, and start a
   new session; skills load when a session starts.
 - Check that the `CLAUDE.md.snippet` lines are in `~/.claude/CLAUDE.md`.

@@ -7,9 +7,9 @@ description: "Use before the first prompt of any build that depends on a model's
 
 Why this exists: on one extraction product, the evaluation was designed after the prompt. It scored the model's own definitions against labels that asked different questions, at a sample size that could not resolve a 15-point change, so seven prompt versions moved the headline by two points. Every step below closes one of those gaps.
 
-Write `docs/EVAL.md` with the nine sections below, in order, before any prompt exists. Stop where it says STOP and show the user what you have. If the project already has a `docs/EVAL.md`, bring it up to date instead of starting again.
+Write `docs/EVAL.md` with the sections below, in order, before any prompt exists: all nine in the full lane, or sections 1, 5 and 7 in the light lane described next. Stop where it says STOP and show the user what you have. If the project already has a `docs/EVAL.md`, bring it up to date instead of starting again.
 
-**Light lane.** If the model's output is only shown, so that no figure from it is published and no buyer acts on it (a caption, a summary line, a suggestion the user edits before it counts), sections 1, 5 and 7 are enough: the question each output answers, the error taxonomy and the run records. Everything below applies in full once a figure is published or a decision rests on the output, and a product that starts in the light lane moves to the full one before its first such figure.
+**Light lane.** If the model's output is only shown, so that no figure from it is published and no buyer acts on it (a caption, a summary line, a suggestion the user edits before it counts), sections 1, 5 and 7 are enough: the question each output answers, the error taxonomy and the run records, with a development set of real items chosen for their errors (section 4's first bullet) on which to classify disagreements, judged against section 1's definitions by whoever reads them. Everything below applies in full once a figure is published or a decision rests on the output, and a product that starts in the light lane moves to the full one before its first such figure.
 
 ## 1. The question each output answers
 
@@ -65,4 +65,4 @@ Write `docs/EVAL.md` with the nine sections below, in order, before any prompt e
 
 ## Output
 
-`docs/EVAL.md` with the nine sections, the marking sheet, and the first-run plan with its cost. Then, and only then, the first prompt.
+`docs/EVAL.md` with the nine sections, the marking sheet, and the first-run plan with its cost; in the light lane, sections 1, 5 and 7, the development set and the first-run plan. Then, and only then, the first prompt.
