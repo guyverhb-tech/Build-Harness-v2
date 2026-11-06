@@ -278,6 +278,20 @@ else
   bad "ship-feature step 2 takes a fixture from the product's real stored content" "$(printf '%s' "$step2f" | grep -o 'trimmed but not invented.\{0,80\}')"
 fi
 
+# --- start-product: ported rule ----------------------------------------------------------
+
+# A rule that lived only in an installed copy: a slice that depends on a model's reading or
+# judgement runs design-eval first. The skill itself isn't shipped, so it applies when installed.
+SP="$ROOT/skills/start-product/SKILL.md"
+backlog="$(section "$SP" 'Write `docs/BACKLOG.md`' | flat)"
+if printf '%s' "$backlog" | grep -q 'If a `design-eval` skill is installed and slice 1, or any slice in the backlog, depends on a model.s reading or judgement' \
+   && printf '%s' "$backlog" | grep -q 'commit its `docs/EVAL.md` with the slice' \
+   && printf '%s' "$backlog" | grep -q 'No prompt is written before that file exists'; then
+  ok "start-product runs design-eval, when installed, before a slice that depends on a model's judgement"
+else
+  bad "start-product runs design-eval, when installed, before a slice that depends on a model's judgement" "design-eval mentions in the backlog step: $(printf '%s' "$backlog" | grep -o 'design-eval' | wc -l | tr -d ' ')"
+fi
+
 # --- Published files ---------------------------------------------------------------------
 
 # A guard rather than a test of new behaviour: it passes today and must keep passing.
