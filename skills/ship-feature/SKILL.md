@@ -122,10 +122,10 @@ steps 5 and 6. Stop sooner if a round ends with the same failure as the round be
 you learned nothing new about its cause. Then end with `Don't merge` and say what keeps
 failing.
 
-**Fix-only review.** If the second round raises new serious findings, from a review, the
-running app or the adversarial pass, you may fix them and run one last check of that final
-fix alone. If any second-round finding repeats an earlier failure, the stop rule above
-applies instead, and there is no fix-only review. The check:
+**Fix-only review.** If the second round raises new serious findings, from a review or the
+running app, you may fix them and run one last check of that final fix alone. If any
+second-round finding repeats an earlier failure, the stop rule above applies instead, and
+there is no fix-only review. The check:
 - Re-run the full suite.
 - Re-run the step 5 check if a finding came from the running app, or if the fix changes
   anything a user exercises.
@@ -136,7 +136,9 @@ applies instead, and there is no fix-only review. The check:
   - the fix's commits, with the commit before the first of them as the base.
 
 This isn't a round, and there is only one. If it approves, the report says the last fix had
-a fix-only review, not a full one. If it doesn't, end with `Don't merge`.
+a fix-only review, not a full one. If it doesn't, end with `Don't merge`. A bypass from the
+adversarial pass never gets a fix-only review: its last check is a fresh adversarial pass
+over the final branch, by the rule in step 6.
 
 ## 5. Check it in the running app
 
@@ -239,13 +241,18 @@ Its one instruction is to break the invariant, with a reproduction. Don't give i
 request, the reviews, the running-app check or your view of the change.
 
 The request file must already carry the `Invariant:` line from step 0. If it doesn't, the
-step 4 reviews never tested the invariant: add the line, give one fresh `request-reviewer`
-pass the updated file, and count that pass as a repair round, before launching this one.
+step 4 reviews never tested the invariant and don't count: add the line and repeat step 4
+in full with the updated file. Rounds already used still count against the limit.
 
 - Each bypass it reproduces is a serious finding. Fix it, re-run the full suite, commit,
   re-run the step 5 check if the fix changes anything a user exercises, and launch a fresh
   adversarial pass over the fixed branch. That is a repair round, under the limits in
-  step 4.
+  step 4. If the second round's fresh pass finds a new bypass, you may fix it once more and
+  launch one last adversarial pass over the final branch, in place of a fix-only review.
+  If that pass finds any bypass, or the new one repeats an earlier failure, end with
+  `Don't merge`.
+- The pass approves when it reproduces no bypass and its `TRIED:` line isn't empty. The
+  verdict needs an approving pass over the final branch; nothing else stands in for it.
 - A suspected bypass without a reproduction is a concern: it goes in your report.
 - A pass that finds no bypass lists what it tried on its `TRIED:` line. If that list is
   empty, the pass proves nothing: launch it once more with the same brief. If the second
@@ -267,8 +274,7 @@ Pick exactly one verdict, checking in this order:
    rounds ran out with a serious finding the fix-only review didn't clear.
 4. **`Ready to merge`**: none of the above. Every first-round review either approved or
    had every serious finding fixed; the last re-review, or the fix-only review, approved;
-   and an adversarial pass over the final branch found no bypass, or the fix-only review
-   cleared the last one.
+   and an adversarial pass over the final branch found no bypass.
 
 If either review pass raised a serious finding or a question, the verdict can't be
 `Ready to merge` on the other pass's approval alone. No review's approval stands in for
