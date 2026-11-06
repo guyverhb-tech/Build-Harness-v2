@@ -14,6 +14,19 @@
     under the existing repair-round limits. `Ready to merge` needs this pass clear. It runs
     in both lanes.
 
+- `ship-feature`, after the first review of the above:
+  - The `Invariant:` line doesn't change once step 0 writes it. One that turns out wrong
+    about the request ends in `Question`, for the user to settle, never in a rewrite.
+  - The light-lane rule says a project's own rule covers the number of reviews, and that
+    step 6 runs in both lanes and under any project rule.
+  - Three rules that had lived only in an installed copy are in the repo, so an install
+    can't drop them: when a `design-eval` skill is installed, a change to what a model is
+    told, its output schema or its scoring follows that skill's rules and writes
+    `docs/EVAL.md` first; a change to what a user sees or hears gets an end-to-end
+    walkthrough in the request file, and ends in `Question` if it would disappoint; tests
+    that read the product's own stored content take a fixture from the real file.
+  - `tests/check.sh` checks each of these.
+
 - `request-reviewer` tests the `Invariant:` line as a requirement, and has an adversarial
   mode, keyed on a request file headed `Adversarial pass`, that lists each attack it made
   on a `TRIED:` line.

@@ -19,7 +19,11 @@
 ("add a dark mode toggle", "fix the empty-list crash"). The `ship-feature` skill:
 1. Checks the request against the real data source, if it depends on one, and writes one
    line saying what must hold once the change is in: the class of problem, not only the
-   case you named.
+   case you named. That line is fixed for the run; if it turns out wrong about your
+   request, the run ends with a question for you. For a change to what you'd see or hear,
+   it also writes a walkthrough of what the user will meet, and stops with a question if
+   that would disappoint. If a `design-eval` skill is installed, a change to what a model
+   is told goes through that skill first.
 2. Makes a new branch and writes tests that fail first.
 3. Builds the change until the full test suite, typecheck and lint pass.
 4. Has two independent reviewers check the change against your request, and fixes what
@@ -57,7 +61,7 @@ get in, say "red team it". The `red-team` skill:
 | --- | --- | --- |
 | **Ready to merge** | Tests pass for real, every review came back clean (or their serious findings were fixed and re-reviewed), a reviewer told to break the change couldn't, and the live data matched. | Look at the branch if you like, then merge it. |
 | **Don't merge** | A serious problem is still open, the tests don't genuinely pass, or two repair rounds (and the final check of the last fix) weren't enough. The line says what's wrong. | Read the problem. Ask for a fix in a new request, or drop the branch. |
-| **Question** | The request is wrong or unclear about the real system, or a reviewer asked a question only you can answer. | Answer it, usually by correcting or narrowing the request, then ask again. |
+| **Question** | The request is wrong or unclear about the real system, the one-line invariant written from it turned out wrong, or a reviewer asked a question only you can answer. | Answer it, usually by correcting or narrowing the request, then ask again. |
 | **Blocked** | Something the change depends on couldn't be reached, so it can't be checked against the real thing. | Make the service reachable (network, credentials, the service being up) and run it again. |
 
 ## What "State:" means

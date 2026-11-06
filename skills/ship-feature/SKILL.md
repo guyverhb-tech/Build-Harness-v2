@@ -45,6 +45,11 @@ feature, it names what the feature guarantees for every input, not only the case
 request lists. If the request already states its invariant, copy that line rather than
 writing another.
 
+Once written, the `Invariant:` line doesn't change. If it turns out to be wrong about the
+request, whether a reviewer shows that or you see it yourself, for example because it
+forbids something the request needs, end with `Question` and show the line, rather than
+rewriting it: the user settles the invariant, and the next run starts from their words.
+
 The reviewers get this file and test the invariant as a requirement. The adversarial pass
 in step 6 gets the invariant alone.
 
@@ -60,13 +65,28 @@ Also check whether it has already been built.
 - If a source the change requires can't be reached, don't build against a guess. End with
   `Blocked`.
 - If the request names nothing external, say so in one line and carry on.
+- If a `design-eval` skill is installed and the change touches what a model is told, its
+  output schema, or how its output is scored, that skill's rules apply: the field's
+  definition matches the label it is scored against; a prompt change names the error class
+  it fixes, from a change report on the development set; the holdout is run only after the
+  change is pinned by hash, and once per claim; the headline sentence is written before the
+  results return. If `docs/EVAL.md` does not exist, write it with that skill before building.
+
+If the change alters what a user sees or hears, add to the request file a walkthrough of what
+the user will meet, end to end and in order: each screen, line or sound, with its length. Write
+it before any test; the reviewers read it beside the request. A reviewer judges the diff against
+the request, so a request that would disappoint its user shows itself only here. If it does, end
+with `Question` instead of building it. Where the project's instructions ask for the user's word
+on what they see, show them the walkthrough first.
 
 ## 2. Branch and write failing tests
 
 - Create a new branch from the default branch; never work on the default branch.
 - Write tests for the acceptance criteria before any implementation. Where the code reads
   external data, build fixtures from the **real response shapes** you fetched in step 1,
-  trimmed but not invented.
+  trimmed but not invented. Where it reads the product's own stored content (a content file,
+  a table, a prompt's data), take at least one fixture from the real file, with the punctuation
+  and lengths it actually holds.
 - Any test that uses a mock, stub or fake says so in its name or a comment next to it,
   including what is mocked. It must never read as a test of the real system.
 - Run the tests and show them failing, with the output. A test that passes before the
@@ -92,8 +112,9 @@ If the change came from `docs/BACKLOG.md`, set that slice's `Status:` line to
 **Light lane.** If the change can't alter what a user sees or hears, what a model is told, or
 what is stored about a person — internal tooling, eval or test harness, price tables, scripts,
 refactors with the suite unchanged — launch `request-reviewer` **once**, not twice. Everything
-else below applies to that one review, and step 6 still runs. If the project's own
-instructions set a lighter or heavier rule, theirs wins.
+else below applies to that one review. If the project's own instructions set a lighter or
+heavier rule for the number of reviews, theirs wins. Step 6 runs in both lanes and under any
+project rule.
 
 Otherwise, launch the `request-reviewer` subagent **twice, in parallel, as separate invocations**.
 Give each one only the request file, the repository path, the branch and the base. Don't
@@ -259,6 +280,8 @@ in full with the updated file. Rounds already used still count against the limit
   bypass, you may fix it once more under the fix-only rule in step 4, followed by one last
   adversarial pass over the final branch. If that pass finds any bypass, or the new one
   repeats an earlier failure, end with `Don't merge`.
+- A bypass is closed in the change, never by narrowing the invariant. If it shows the
+  invariant is wrong about the request, the rule in step 0 applies: end with `Question`.
 - The pass approves when it reproduces no bypass and its `TRIED:` line isn't empty. The
   verdict needs an approving pass over the final branch; nothing else stands in for it.
 - A suspected bypass without a reproduction is a concern: it goes in your report.
@@ -275,8 +298,8 @@ Don't merge, push, deploy or apply a migration. Leave the branch as it is.
 Pick exactly one verdict, checking in this order:
 1. **`Blocked`**: a real integration the change requires could not be reached, in step 1
    or by any reviewer pass, so the change is unverified against it.
-2. **`Question`**: the request is wrong or ambiguous about the real system, or any
-   reviewer pass returned `QUESTION`.
+2. **`Question`**: the request is wrong or ambiguous about the real system, any reviewer
+   pass returned `QUESTION`, or the invariant turned out wrong about the request.
 3. **`Don't merge`**: a serious finding is still open (from a review, the running app or
    the adversarial pass), the suite doesn't pass by the rules in step 3, or the repair
    rounds ran out with a serious finding the fix-only review didn't clear.

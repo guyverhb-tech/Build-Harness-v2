@@ -228,7 +228,8 @@ fi
 # and one that turns out wrong about the request ends in Question, for the user to settle.
 step0f="$(section "$SKILL" "Settle the request" | flat)"
 if printf '%s' "$step0f" | grep -q 'Once written, the `Invariant:` line doesn.t change' \
-   && printf '%s' "$step0f" | grep -q 'end with `Question`[^.]*rather than rewriting it'; then
+   && printf '%s' "$step0f" | grep -q 'end with `Question`[^.]*rather than rewriting it' \
+   && section "$SKILL" "Adversarial pass" | flat | grep -q 'never by narrowing the invariant'; then
   ok "ship-feature step 0 fixes the Invariant line once written; a wrong one ends in Question"
 else
   bad "ship-feature step 0 fixes the Invariant line once written; a wrong one ends in Question" "$(printf '%s' "$step0f" | grep -o 'Once written.\{0,100\}' || echo 'no "Once written" sentence in step 0')"
