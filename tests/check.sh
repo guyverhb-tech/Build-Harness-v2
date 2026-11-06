@@ -152,6 +152,64 @@ else
   bad "red-team forbids guessing passwords or other credentials" "$(grep -o 'No guessing of[^,]*' "$ROOT/skills/red-team/SKILL.md")"
 fi
 
+# --- Invariant and adversarial pass --------------------------------------------------------
+
+REVIEWER="$ROOT/agents/request-reviewer.md"
+# The body of one "## <n>. <title>" step of a skill.
+section() { awk -v h="$2" '$0 ~ "^## [0-9]+\\. " h "$" { on = 1; next } on && /^## [0-9]+\. / { exit } on { print }' "$1"; }
+
+# Step 0 writes the settled request and, under it, one line stating the class of the
+# problem, not the instance: the invariant the reviewers test and the adversarial pass attacks.
+step0="$(section "$SKILL" "Settle the request")"
+if printf '%s\n' "$step0" | grep -q '`Invariant:`' && printf '%s\n' "$step0" | grep -qi 'the class, not the instance'; then
+  ok "ship-feature step 0 adds a one-line Invariant that states the class, not the instance"
+else
+  bad "ship-feature step 0 adds a one-line Invariant that states the class, not the instance" "$(printf '%s\n' "$step0" | grep -n -i 'invariant' | head -3 | tr '\n' ';')"
+fi
+
+# The reviewer lists the invariant under REQUEST COVERAGE, so a gap is `partly` or `missing`,
+# which ship-feature already treats as a serious finding.
+if grep -q '^REQUEST COVERAGE:.*invariant' "$REVIEWER"; then
+  ok "request-reviewer reports the invariant under REQUEST COVERAGE"
+else
+  bad "request-reviewer reports the invariant under REQUEST COVERAGE" "$(grep -n '^REQUEST COVERAGE:' "$REVIEWER")"
+fi
+
+# One more request-reviewer pass after every review approves, told to break the invariant with
+# a reproduction; each bypass is a serious finding under the repair-round limits.
+adv="$(section "$SKILL" "Adversarial pass")"
+if [ -n "$adv" ] && printf '%s\n' "$adv" | grep -q 'request-reviewer' && printf '%s\n' "$adv" | grep -qi 'break' \
+   && printf '%s\n' "$adv" | grep -q 'reproduction' && printf '%s\n' "$adv" | grep -q 'serious finding' \
+   && printf '%s\n' "$adv" | grep -qi 'repair round'; then
+  ok "ship-feature has an adversarial-pass step: break the invariant, with a reproduction, under the repair-round limits"
+else
+  bad "ship-feature has an adversarial-pass step: break the invariant, with a reproduction, under the repair-round limits" "$( [ -z "$adv" ] && echo 'no "## <n>. Adversarial pass" step' || printf '%s\n' "$adv" | head -3 | tr '\n' ';')"
+fi
+
+# The lead heads the adversarial brief with a marker and the reviewer keys its mode on the same
+# marker; rename one and the other must follow.
+marker='`Adversarial pass`'
+if grep -qF "$marker" "$SKILL" && grep -qF "$marker" "$REVIEWER"; then
+  ok "the adversarial brief's heading is the same in ship-feature and request-reviewer"
+else
+  bad "the adversarial brief's heading is the same in ship-feature and request-reviewer" "skill: $(grep -cF "$marker" "$SKILL"), reviewer: $(grep -cF "$marker" "$REVIEWER")"
+fi
+
+# Ready to merge needs the adversarial pass clear, not the reviews alone.
+verdict="$(section "$SKILL" "Verdict")"
+if printf '%s\n' "$verdict" | grep -qi 'adversarial pass'; then
+  ok "ship-feature's verdict rules name the adversarial pass"
+else
+  bad "ship-feature's verdict rules name the adversarial pass" "$(printf '%s\n' "$verdict" | grep -n 'Ready to merge' | head -2 | tr '\n' ';')"
+fi
+
+# The scenario this exists for: a fix that closes the reported instance but not the class.
+if grep -qi 'adversarial pass' "$ROOT/docs/FIXTURES.md"; then
+  ok "FIXTURES.md has a scenario for a fix that closes the instance but not the class"
+else
+  bad "FIXTURES.md has a scenario for a fix that closes the instance but not the class" "no scenario names the adversarial pass"
+fi
+
 # --- Published files ---------------------------------------------------------------------
 
 # A guard rather than a test of new behaviour: it passes today and must keep passing.
