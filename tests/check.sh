@@ -323,15 +323,16 @@ else
 fi
 
 # Each rule in the section it belongs to: a taxonomy fitted to the task, the checker guard beside
-# fakes and real runs, and the triage question in red-team's report step, not the stopping rule.
+# fakes and real runs, and the audience question kept in the stopping rule, where it says when to
+# stop chasing findings nobody will see, not in red-team, where it could demote a security finding.
 if [ -f "$DE" ] && section "$DE" "An error taxonomy before any change" | flat | grep -q 'fitted to the task' \
    && section "$DE" "Run records" | flat | grep -q 'a guard set above it' \
    && ! section "$DE" "The question each output answers" | flat | grep -q 'a guard set above it' \
-   && ! section "$DE" "The stopping rule" | flat | grep -q 'thirty seconds' \
-   && section "$ROOT/skills/red-team/SKILL.md" "Report" | flat | grep -q 'thirty seconds or fifteen minutes'; then
-  ok "design-eval's rules sit in their own sections, and the triage question is in red-team's report"
+   && section "$DE" "The stopping rule" | flat | grep -q 'thirty seconds or fifteen minutes' \
+   && ! grep -q 'thirty seconds' "$ROOT/skills/red-team/SKILL.md"; then
+  ok "design-eval's rules sit in their own sections, and the audience question stays in its stopping rule"
 else
-  bad "design-eval's rules sit in their own sections, and the triage question is in red-team's report" "$([ -f "$DE" ] && printf 'taxonomy fitted: %s; guard in 7: %s; guard in 1: %s; triage in 9: %s; triage in red-team: %s' "$(section "$DE" 'An error taxonomy before any change' | flat | grep -c 'fitted to the task')" "$(section "$DE" 'Run records' | flat | grep -c 'a guard set above it')" "$(section "$DE" 'The question each output answers' | flat | grep -c 'a guard set above it')" "$(section "$DE" 'The stopping rule' | flat | grep -c 'thirty seconds')" "$(section "$ROOT/skills/red-team/SKILL.md" 'Report' | flat | grep -c 'thirty seconds or fifteen minutes')" || echo 'no skills/design-eval/SKILL.md')"
+  bad "design-eval's rules sit in their own sections, and the audience question stays in its stopping rule" "$([ -f "$DE" ] && printf 'taxonomy fitted: %s; guard in 7: %s; guard in 1: %s; audience question in 9: %s; in red-team: %s' "$(section "$DE" 'An error taxonomy before any change' | flat | grep -c 'fitted to the task')" "$(section "$DE" 'Run records' | flat | grep -c 'a guard set above it')" "$(section "$DE" 'The question each output answers' | flat | grep -c 'a guard set above it')" "$(section "$DE" 'The stopping rule' | flat | grep -c 'thirty seconds')" "$(grep -c 'thirty seconds' "$ROOT/skills/red-team/SKILL.md")" || echo 'no skills/design-eval/SKILL.md')"
 fi
 
 # Skills and the reviewer carry their lessons without the incidents: no "(Month YYYY)" and no
