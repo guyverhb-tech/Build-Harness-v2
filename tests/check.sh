@@ -210,6 +210,60 @@ else
   bad "FIXTURES.md has a scenario for a fix that closes the instance but not the class" "no scenario names the adversarial pass"
 fi
 
+# --- Light lane, frozen invariant, ported rules ------------------------------------------
+
+# Prose checks that don't depend on where a line wraps.
+flat() { tr -s '[:space:]' ' '; }
+
+# A project rule about the number of reviews can't be read as dropping the adversarial pass:
+# the sentence that step 6 always runs comes after "theirs wins", not before it.
+lane="$(section "$SKILL" "Independent reviews" | flat)"
+if printf '%s' "$lane" | grep -q 'theirs wins\. Step 6 runs in both lanes and under any project rule\.'; then
+  ok "ship-feature's light lane says step 6 runs under any project rule, after 'theirs wins'"
+else
+  bad "ship-feature's light lane says step 6 runs under any project rule, after 'theirs wins'" "$(printf '%s' "$lane" | grep -o '.\{70\}theirs wins.\{0,70\}')"
+fi
+
+# The lead can't narrow the invariant after a bypass: the line is fixed once step 0 writes it,
+# and one that turns out wrong about the request ends in Question, for the user to settle.
+step0f="$(section "$SKILL" "Settle the request" | flat)"
+if printf '%s' "$step0f" | grep -q 'Once written, the `Invariant:` line doesn.t change' \
+   && printf '%s' "$step0f" | grep -q 'end with `Question`[^.]*rather than rewriting it'; then
+  ok "ship-feature step 0 fixes the Invariant line once written; a wrong one ends in Question"
+else
+  bad "ship-feature step 0 fixes the Invariant line once written; a wrong one ends in Question" "$(printf '%s' "$step0f" | grep -o 'Once written.\{0,100\}' || echo 'no "Once written" sentence in step 0')"
+fi
+
+verdictf="$(section "$SKILL" "Verdict" | flat)"
+if printf '%s' "$verdictf" | grep -q 'returned `QUESTION`, or the invariant turned out wrong about the request'; then
+  ok "ship-feature's Question rule names an invariant that turned out wrong about the request"
+else
+  bad "ship-feature's Question rule names an invariant that turned out wrong about the request" "$(printf '%s' "$verdictf" | grep -o '`Question`\*\*:.\{0,120\}')"
+fi
+
+# Rules that lived only in an installed copy, ported so an install can't drop them.
+step1f="$(section "$SKILL" "Check the premise against the live source" | flat)"
+if printf '%s' "$step1f" | grep -q 'If a `design-eval` skill is installed and the change touches what a model is told' \
+   && printf '%s' "$step1f" | grep -q 'pinned by hash' && printf '%s' "$step1f" | grep -q 'docs/EVAL.md'; then
+  ok "ship-feature step 1 applies design-eval, when that skill is installed, to a change in what a model is told"
+else
+  bad "ship-feature step 1 applies design-eval, when that skill is installed, to a change in what a model is told" "design-eval mentions in step 1: $(printf '%s' "$step1f" | grep -o 'design-eval' | wc -l | tr -d ' ')"
+fi
+
+if printf '%s' "$step1f" | grep -q 'a walkthrough of what the user will meet, end to end and in order' \
+   && printf '%s' "$step1f" | grep -q 'the reviewers read it beside the request'; then
+  ok "ship-feature step 1 writes a walkthrough for a change to what a user sees or hears"
+else
+  bad "ship-feature step 1 writes a walkthrough for a change to what a user sees or hears" "walkthrough mentions in step 1: $(printf '%s' "$step1f" | grep -o 'walkthrough' | wc -l | tr -d ' ')"
+fi
+
+step2f="$(section "$SKILL" "Branch and write failing tests" | flat)"
+if printf '%s' "$step2f" | grep -q 'take at least one fixture from the real file, with the punctuation and lengths it actually holds'; then
+  ok "ship-feature step 2 takes a fixture from the product's real stored content"
+else
+  bad "ship-feature step 2 takes a fixture from the product's real stored content" "$(printf '%s' "$step2f" | grep -o 'trimmed but not invented.\{0,80\}')"
+fi
+
 # --- Published files ---------------------------------------------------------------------
 
 # A guard rather than a test of new behaviour: it passes today and must keep passing.
