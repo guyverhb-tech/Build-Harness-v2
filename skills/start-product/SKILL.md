@@ -82,6 +82,11 @@ Depends on: <slice numbers, or none>
 `Status:` is `todo`, `built on <branch>`, or `done`. `ship-feature` reads it to find the
 next slice, so keep it on its own line.
 
+If a `design-eval` skill is installed and slice 1, or any slice in the backlog, depends on a
+model's reading or judgement (extraction, classification, summarisation, scoring, agents),
+run that skill first and commit its `docs/EVAL.md` with the slice. No prompt is written
+before that file exists, and the brief records which outputs it covers.
+
 ## 6. Build slice 1 as a thin end-to-end path
 
 Build it on a new branch. Slice 1 has:

@@ -29,6 +29,10 @@
     that read the product's own stored content take a fixture from the real file.
   - `tests/check.sh` checks each of these.
 
+- `start-product`: when a `design-eval` skill is installed, a slice that depends on a model's
+  reading or judgement runs that skill first and commits its `docs/EVAL.md` with the slice.
+  Ported from an installed copy so an install can't drop it; `tests/check.sh` checks it.
+
 - `request-reviewer` tests the `Invariant:` line as a requirement, and has an adversarial
   mode, keyed on a request file headed `Adversarial pass`, that lists each attack it made
   on a `TRIED:` line.

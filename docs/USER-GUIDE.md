@@ -13,7 +13,9 @@
    architecture and why) and `docs/BACKLOG.md` (small slices, each one something a user
    could see).
 4. It builds the first slice end to end on a new branch. That includes CI, a clean-clone
-   build check, and a launch recipe that later runs use to start the app.
+   build check, and a launch recipe that later runs use to start the app. If the slice
+   depends on a model's reading or judgement and you have a `design-eval` skill installed,
+   that skill runs first and its eval file is committed with the slice.
 
 **Adding to it.** Say "next" to build the next slice in the backlog, or describe a change
 ("add a dark mode toggle", "fix the empty-list crash"). The `ship-feature` skill:
