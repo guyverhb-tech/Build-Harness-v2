@@ -17,8 +17,8 @@
 - `ship-feature`, after the first review of the above:
   - The `Invariant:` line doesn't change once step 0 writes it. One that turns out wrong
     about the request ends in `Question`, for the user to settle, never in a rewrite. A run
-    that reaches step 6 without the line also ends in `Question`; it is never written after
-    the build.
+    that reaches review or step 6 without the line also ends in `Question`; it is never
+    written after the build.
   - The light-lane rule says a project's own rule covers the number of reviews, and that
     step 6 runs in both lanes and under any project rule.
   - Three rules that had lived only in an installed copy are in the repo, so an install

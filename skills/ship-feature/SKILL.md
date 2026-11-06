@@ -130,11 +130,16 @@ give either one your own summary, your view of the change, or the other's output
   does. Build it, or if the request itself should change, end with `Question`. The
   exception is a step the request puts after review, such as pushing, opening a PR or a
   remote CI run: note it in your report and carry on.
-- A review whose REQUEST COVERAGE line doesn't list the invariant hasn't tested it, and
-  doesn't approve: launch it once more with the same brief. If the second one also leaves
-  it out, end with `Don't merge` and say that the reviewer in use doesn't report on the
-  invariant. This holds for every pass in this step: first reviews, repair re-reviews and
-  the fix-only review.
+- If the request file has no `Invariant:` line, no pass in this step counts, whatever it
+  reports, and the line can't be written now, with the diff in view: end with `Question`,
+  saying the run reached review without an invariant, so the user can state or confirm one
+  and the next run starts from their words. A REQUEST COVERAGE line that marks the
+  invariant `missing` because the file has none is this case, not a requirement to build.
+- Otherwise, a review whose REQUEST COVERAGE line doesn't list the invariant hasn't tested
+  it, and doesn't approve: launch it once more with the same brief. If the second one also
+  leaves it out, end with `Don't merge` and say that the reviewer in use doesn't report on
+  the invariant. This holds for every pass in this step: first reviews, repair re-reviews
+  and the fix-only review.
 - A review **approves** when it leaves no serious finding open by these rules, and its
   REAL SYSTEM line says the check passed or didn't apply (a step after review, as above,
   aside). That holds whether its verdict line says `SHIP` or `REVISE`. A real-system check
@@ -301,7 +306,7 @@ Pick exactly one verdict, checking in this order:
    or by any reviewer pass, so the change is unverified against it.
 2. **`Question`**: the request is wrong or ambiguous about the real system, any reviewer
    pass returned `QUESTION`, or the invariant turned out wrong about the request, or the
-   run reached step 6 without one.
+   run reached step 4 or 6 without one.
 3. **`Don't merge`**: a serious finding is still open (from a review, the running app or
    the adversarial pass), the suite doesn't pass by the rules in step 3, or the repair
    rounds ran out with a serious finding the fix-only review didn't clear.
