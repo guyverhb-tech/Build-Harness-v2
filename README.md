@@ -13,7 +13,8 @@ Describe what you want. There are no commands to remember.
 - In an existing project, say **"add …"**, **"fix …"** or **"next"** and `ship-feature`
   runs. It checks the request against the real data source, writes failing tests, builds
   the change on a new branch, gets two independent reviews (one for internal changes
-  nobody sees), tries the change in the running app, and stops.
+  nobody sees), tries the change in the running app, has a third reviewer try to break the
+  one-line invariant written from your request, and stops.
 - Before you show a product, demo or site to its audience, say **"red team it"** and
   `red-team` runs. Three attackers work in parallel: one on the claims and method, one on
   security and engineering, and one reading the product as its audience. It checks every
@@ -52,8 +53,8 @@ browser for you.
 
 ## Checks
 
-`./tests/check.sh` checks the installer, the skills' frontmatter and the running-app
-browser recipe. The browser checks are skipped, and say so, where the headless shell isn't
+`./tests/check.sh` checks the installer, the skills' frontmatter, the running-app browser
+recipe, and the invariant and adversarial-pass rules. The browser checks are skipped, and say so, where the headless shell isn't
 installed.
 
 ## Why it's this small

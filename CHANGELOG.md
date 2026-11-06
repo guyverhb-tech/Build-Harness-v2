@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+- `ship-feature`, the class, not the instance:
+  - Step 0 adds one line headed `Invariant:` to the request file, stating what must hold
+    for every input, path and process once the change is in, for example "no rendered
+    output can make a network request" rather than "fix XSS". The reviewers test it under
+    REQUEST COVERAGE, so a gap is `partly` or `missing`, which was already a serious
+    finding.
+  - A new step 6, the adversarial pass. After every review approves and the running-app
+    check is done, a third `request-reviewer` invocation gets the invariant and the branch
+    alone and is told to break it, with a reproduction. Each bypass is a serious finding
+    under the existing repair-round limits. `Ready to merge` needs this pass clear. It runs
+    in both lanes.
+
+- `request-reviewer` tests the `Invariant:` line as a requirement, and has an adversarial
+  mode, keyed on a request file headed `Adversarial pass`, that lists each attack it made
+  on a `TRIED:` line.
+
+- `docs/FIXTURES.md` gains scenario 6, a fix that closes the reported instance but not the
+  class. `tests/check.sh` checks the invariant line, the adversarial step, and that the
+  skill and the reviewer use the same heading for the adversarial brief.
+
 - `red-team` skill. Runs before a product is shown to its audience for the first time, or
   before a release that changes its headline claims or how it is accessed. The lead reads
   the product, then builds the audience's pages in a clean clone of the deployed branch.

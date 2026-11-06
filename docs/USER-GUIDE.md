@@ -17,7 +17,9 @@
 
 **Adding to it.** Say "next" to build the next slice in the backlog, or describe a change
 ("add a dark mode toggle", "fix the empty-list crash"). The `ship-feature` skill:
-1. Checks the request against the real data source, if it depends on one.
+1. Checks the request against the real data source, if it depends on one, and writes one
+   line saying what must hold once the change is in: the class of problem, not only the
+   case you named.
 2. Makes a new branch and writes tests that fail first.
 3. Builds the change until the full test suite, typecheck and lint pass.
 4. Has two independent reviewers check the change against your request, and fixes what
@@ -30,7 +32,9 @@
    headless browser under a hard time limit for what a page renders. It never drives your
    own browser. A light-lane change with nothing a user could exercise skips this step,
    and the verdict says so.
-6. Stops with a one-line verdict. Nothing is merged, pushed or deployed.
+6. Has a third reviewer, given only that one line and the branch, try to break it with a
+   reproduction. Each bypass it shows is fixed within the same repair-round limit.
+7. Stops with a one-line verdict. Nothing is merged, pushed or deployed.
 
 When you're happy, merge the branch yourself. The next "next" picks up from there.
 
@@ -51,7 +55,7 @@ get in, say "red team it". The `red-team` skill:
 
 | Verdict | What it means | What to do |
 | --- | --- | --- |
-| **Ready to merge** | Tests pass for real, every review came back clean (or their serious findings were fixed and re-reviewed), and the live data matched. | Look at the branch if you like, then merge it. |
+| **Ready to merge** | Tests pass for real, every review came back clean (or their serious findings were fixed and re-reviewed), a reviewer told to break the change couldn't, and the live data matched. | Look at the branch if you like, then merge it. |
 | **Don't merge** | A serious problem is still open, the tests don't genuinely pass, or two repair rounds (and the final check of the last fix) weren't enough. The line says what's wrong. | Read the problem. Ask for a fix in a new request, or drop the branch. |
 | **Question** | The request is wrong or unclear about the real system, or a reviewer asked a question only you can answer. | Answer it, usually by correcting or narrowing the request, then ask again. |
 | **Blocked** | Something the change depends on couldn't be reached, so it can't be checked against the real thing. | Make the service reachable (network, credentials, the service being up) and run it again. |

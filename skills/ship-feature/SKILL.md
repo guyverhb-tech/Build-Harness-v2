@@ -1,6 +1,6 @@
 ---
 name: ship-feature
-description: "Use when the user asks to build, add, fix or change a feature in an existing project, or says 'next' or 'build the next slice'. Builds the change test-first on a new branch, checks it against the live source and in the running app, gets two independent reviews, and stops without merging. Not for edits that can't change behaviour (typos, comments, docs wording, formatting); make those directly on a branch."
+description: "Use when the user asks to build, add, fix or change a feature in an existing project, or says 'next' or 'build the next slice'. Builds the change test-first on a new branch, checks it against the live source and in the running app, gets two independent reviews and one adversarial pass against the request's invariant, and stops without merging. Not for edits that can't change behaviour (typos, comments, docs wording, formatting); make those directly on a branch."
 argument-hint: "[request]"
 ---
 
@@ -36,7 +36,17 @@ Then settle what to build:
   - If there's no backlog, no `todo` slice, or no brief, say which and stop.
 
 Write the settled request verbatim to a file outside the repo (for example in the
-scratchpad). The reviewers get this file.
+scratchpad). Under it, add one line headed `Invariant:`, and make it state
+the class, not the instance: what must hold for every input, path and process once the
+change is in, written so a reviewer can test it. For a fix, it names the class of fault
+the fix rules out: "no rendered output can make a network request", not "fix XSS"; "no
+proposal is sent twice by any process or after a restart", not "don't retry POSTs". For a
+feature, it names what the feature guarantees for every input, not only the cases the
+request lists. If the request already states its invariant, copy that line rather than
+writing another.
+
+The reviewers get this file and test the invariant as a requirement. The adversarial pass
+in step 6 gets the invariant alone.
 
 ## 1. Check the premise against the live source
 
@@ -82,8 +92,8 @@ If the change came from `docs/BACKLOG.md`, set that slice's `Status:` line to
 **Light lane.** If the change can't alter what a user sees or hears, what a model is told, or
 what is stored about a person — internal tooling, eval or test harness, price tables, scripts,
 refactors with the suite unchanged — launch `request-reviewer` **once**, not twice. Everything
-else below applies to that one review. If the project's own instructions set a lighter or
-heavier rule, theirs wins.
+else below applies to that one review, and step 6 still runs. If the project's own
+instructions set a lighter or heavier rule, theirs wins.
 
 Otherwise, launch the `request-reviewer` subagent **twice, in parallel, as separate invocations**.
 Give each one only the request file, the repository path, the branch and the base. Don't
@@ -102,20 +112,20 @@ give either one your own summary, your view of the change, or the other's output
 - A review **approves** when it leaves no serious finding open by these rules, and its
   REAL SYSTEM line says the check passed or didn't apply (a step after review, as above,
   aside). That holds whether its verdict line says `SHIP` or `REVISE`. A real-system check
-  it couldn't make because the source was unreachable is `Blocked`, in step 7. One it
+  it couldn't make because the source was unreachable is `Blocked`, in step 8. One it
   skipped for any other reason means the review doesn't approve: give the next pass what
   it needs to make the check, within the repair-round limit.
 
 **Repair rounds.** A repair round is: fix, re-run the full suite, then one fresh
 `request-reviewer` pass over the fixed branch. Two rounds at most, counting any from
-step 5. Stop sooner if a round ends with the same failure as the round before and you
-learned nothing new about its cause. Then end with `Don't merge` and say what keeps
+steps 5 and 6. Stop sooner if a round ends with the same failure as the round before and
+you learned nothing new about its cause. Then end with `Don't merge` and say what keeps
 failing.
 
-**Fix-only review.** If the second round raises new serious findings, you may fix them
-and run one last check of that final fix alone. If any second-round finding repeats an
-earlier failure, the stop rule above applies instead, and there is no fix-only review. The
-check:
+**Fix-only review.** If the second round raises new serious findings, from a review, the
+running app or the adversarial pass, you may fix them and run one last check of that final
+fix alone. If any second-round finding repeats an earlier failure, the stop rule above
+applies instead, and there is no fix-only review. The check:
 - Re-run the full suite.
 - Re-run the step 5 check if a finding came from the running app, or if the fix changes
   anything a user exercises.
@@ -217,30 +227,57 @@ app when you're done.
 - If the app can't be launched, record why. That doesn't block `Ready to merge`, but the
   verdict line must say `not checked in the running app`.
 
-## 6. Stop
+## 6. Adversarial pass
+
+Once every review in step 4 approves and step 5 is done, launch `request-reviewer` once
+more, as a fresh invocation. This pass is required in both lanes. Give it:
+- a request file headed `Adversarial pass`, holding the `Invariant:` line from the request
+  file and nothing else;
+- the repository path, the branch and the base.
+
+Its one instruction is to break the invariant, with a reproduction. Don't give it the
+request, the reviews, the running-app check or your view of the change.
+
+The request file must already carry the `Invariant:` line from step 0. If it doesn't, the
+step 4 reviews never tested the invariant: add the line, give one fresh `request-reviewer`
+pass the updated file, and count that pass as a repair round, before launching this one.
+
+- Each bypass it reproduces is a serious finding. Fix it, re-run the full suite, commit,
+  re-run the step 5 check if the fix changes anything a user exercises, and launch a fresh
+  adversarial pass over the fixed branch. That is a repair round, under the limits in
+  step 4.
+- A suspected bypass without a reproduction is a concern: it goes in your report.
+- A pass that finds no bypass lists what it tried on its `TRIED:` line. If that list is
+  empty, the pass proves nothing: launch it once more with the same brief. If the second
+  one also lists nothing, end with `Don't merge`.
+
+## 7. Stop
 
 Don't merge, push, deploy or apply a migration. Leave the branch as it is.
 
-## 7. Verdict
+## 8. Verdict
 
 Pick exactly one verdict, checking in this order:
 1. **`Blocked`**: a real integration the change requires could not be reached, in step 1
-   or by either reviewer, so the change is unverified against it.
-2. **`Question`**: the request is wrong or ambiguous about the real system, or either
-   reviewer returned `QUESTION`.
-3. **`Don't merge`**: a serious finding is still open (from a reviewer or from the running
-   app), the suite doesn't pass by the rules in step 3, or the repair rounds ran out with a
-   serious finding the fix-only review didn't clear.
+   or by any reviewer pass, so the change is unverified against it.
+2. **`Question`**: the request is wrong or ambiguous about the real system, or any
+   reviewer pass returned `QUESTION`.
+3. **`Don't merge`**: a serious finding is still open (from a review, the running app or
+   the adversarial pass), the suite doesn't pass by the rules in step 3, or the repair
+   rounds ran out with a serious finding the fix-only review didn't clear.
 4. **`Ready to merge`**: none of the above. Every first-round review either approved or
-   had every serious finding fixed, and the last re-review, or the fix-only review,
-   approved.
+   had every serious finding fixed; the last re-review, or the fix-only review, approved;
+   and an adversarial pass over the final branch found no bypass, or the fix-only review
+   cleared the last one.
 
 If either review pass raised a serious finding or a question, the verdict can't be
-`Ready to merge` on the other pass's approval alone.
+`Ready to merge` on the other pass's approval alone. No review's approval stands in for
+the adversarial pass.
 
 The report is the evidence: commands run, test counts, findings and what was done about
-them, in your final message, plus a short `.md` beside the work only if the project asks for
-one. Don't archive full suite logs or build evidence folders by default.
+them, and what the adversarial pass tried or found, in your final message, plus a short
+`.md` beside the work only if the project asks for one. Don't archive full suite logs or
+build evidence folders by default.
 
 End with exactly this line, and nothing after it:
 

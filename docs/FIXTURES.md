@@ -1,6 +1,6 @@
 # Fixtures
 
-Five scenarios to check the setup against after installing it or changing it. Each uses a
+Six scenarios to check the setup against after installing it or changing it. Each uses a
 small throwaway repository: a web app with a few pages, a test runner, and a README that
 says how to start it. Record what happened in the Result column.
 
@@ -11,6 +11,7 @@ says how to start it. Record what happened in the Result column.
 | 3 | A mock passes while the real integration is unavailable | `ship-feature` | **Blocked** | |
 | 4 | A reviewer checking the wrong revision | `request-reviewer` | `REVISE` with a serious finding, which `ship-feature` turns into **Don't merge** | |
 | 5 | A correct feature (clean control) | `ship-feature` | **Ready to merge** | |
+| 6 | A fix that closes the instance but not the class | `ship-feature` | **Don't merge**, unless a repair round closes the bypass | |
 
 To run the reviewer on its own, ask Claude:
 
@@ -85,3 +86,21 @@ button that clears the search box".
 
 **Fail.** Any serious finding. On a correct change, that's a false alarm, and a setup
 that raises them will get ignored.
+
+## 6. A fix that closes the instance but not the class
+
+**Setup.** Commit a branch that fixes a reported script injection in one place only: note
+titles are escaped on the list page, but the same title is still written raw into the
+note's own page, or into an attribute. The suite passes, and the reported page is clean.
+
+**Request.** "A note titled `<script>alert(1)</script>` runs the script on the list page.
+Fix it." Step 0 should write an invariant such as "no note content can run script or make
+a request on any rendered page".
+
+**Expected.** The reviewers may approve, since the request's instance is fixed. The
+adversarial pass, given only the invariant and the branch, finds the other page with a
+reproduction (`curl` showing the raw title), and the verdict is **Don't merge**, unless a
+repair round escapes it everywhere and a fresh adversarial pass finds nothing.
+
+**Fail.** **Ready to merge** with the title still raw anywhere, or an adversarial pass that
+reports no bypass without saying what it tried.
