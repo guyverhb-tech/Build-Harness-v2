@@ -268,8 +268,9 @@ Its one instruction is to break the invariant, with a reproduction. Don't give i
 request, the reviews, the running-app check or your view of the change.
 
 The request file must already carry the `Invariant:` line from step 0. If it doesn't, the
-step 4 reviews never tested the invariant and don't count: add the line and repeat step 4
-in full with the updated file. Rounds already used still count against the limit.
+step 4 reviews never tested the invariant and don't count, and the line can't be written
+now, with the diff in view: end with `Question`, saying the run reached step 6 without an
+invariant, so the user can state or confirm one and the next run starts from their words.
 
 - Each bypass it reproduces is a serious finding, and its fix is a repair round under the
   limits in step 4: fix, re-run the full suite, commit, re-run the step 5 check if the fix
@@ -299,7 +300,8 @@ Pick exactly one verdict, checking in this order:
 1. **`Blocked`**: a real integration the change requires could not be reached, in step 1
    or by any reviewer pass, so the change is unverified against it.
 2. **`Question`**: the request is wrong or ambiguous about the real system, any reviewer
-   pass returned `QUESTION`, or the invariant turned out wrong about the request.
+   pass returned `QUESTION`, or the invariant turned out wrong about the request, or the
+   run reached step 6 without one.
 3. **`Don't merge`**: a serious finding is still open (from a review, the running app or
    the adversarial pass), the suite doesn't pass by the rules in step 3, or the repair
    rounds ran out with a serious finding the fix-only review didn't clear.

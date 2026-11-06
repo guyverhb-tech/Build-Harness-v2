@@ -61,7 +61,7 @@ get in, say "red team it". The `red-team` skill:
 | --- | --- | --- |
 | **Ready to merge** | Tests pass for real, every review came back clean (or their serious findings were fixed and re-reviewed), a reviewer told to break the change couldn't, and the live data matched. | Look at the branch if you like, then merge it. |
 | **Don't merge** | A serious problem is still open, the tests don't genuinely pass, or two repair rounds (and the final check of the last fix) weren't enough. The line says what's wrong. | Read the problem. Ask for a fix in a new request, or drop the branch. |
-| **Question** | The request is wrong or unclear about the real system, the one-line invariant written from it turned out wrong, or a reviewer asked a question only you can answer. | Answer it, usually by correcting or narrowing the request, then ask again. |
+| **Question** | The request is wrong or unclear about the real system, the one-line invariant written from it turned out wrong or was never written, or a reviewer asked a question only you can answer. | Answer it, usually by correcting or narrowing the request, then ask again. |
 | **Blocked** | Something the change depends on couldn't be reached, so it can't be checked against the real thing. | Make the service reachable (network, credentials, the service being up) and run it again. |
 
 ## What "State:" means
