@@ -62,6 +62,7 @@ Write `docs/EVAL.md` with the sections below, in order, before any prompt exists
 ## 9. The stopping rule
 
 - Set it in advance. For example: stop when the paired test across fields gives p above 0.2 twice in a row, or when most remaining errors are label noise, or when the budget cap is reached.
+- A review finding becomes work only after the question "would the audience see this in thirty seconds or fifteen minutes?" is answered yes.
 
 ## Output
 

@@ -145,9 +145,6 @@ Write `report.md` in that folder. It holds:
 - **Fix order**: the fixes in order of signal per hour, noting any that would cost money to
   carry out.
 
-A review finding becomes work only after the question "would the audience see this in
-thirty seconds or fifteen minutes?" is answered yes.
-
 Any replacement copy you propose follows the copy rules in CLAUDE.md, if there are any.
 
 ## 7. Stop

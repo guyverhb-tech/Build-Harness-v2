@@ -8,8 +8,7 @@
   development set and a pinned holdout, an error taxonomy, a pre-registered headline, run
   records and a stopping rule. Compared with the copy it came from: a light lane for output
   that is only shown; a taxonomy fitted to the task; the checker-guard rule sits with the
-  run records and the triage question moved to `red-team`'s report; the paired tests are
-  named. `install.sh` installs it, `CLAUDE.md.snippet` carries its workflow line, and the
+  run records; the paired tests are named. `install.sh` installs it, `CLAUDE.md.snippet` carries its workflow line, and the
   installer tells an upgrading user to add that line. The guards "if a `design-eval` skill is
   installed" in `ship-feature` and `start-product` are gone, since the harness ships it.
 
