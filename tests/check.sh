@@ -258,6 +258,17 @@ else
   bad "ship-feature step 1 writes a walkthrough for a change to what a user sees or hears" "walkthrough mentions in step 1: $(printf '%s' "$step1f" | grep -o 'walkthrough' | wc -l | tr -d ' ')"
 fi
 
+# A run that reaches step 6 with no Invariant line ends in Question. The line is never written
+# after the build, with the diff in view, and the verdict's Question rule names the case.
+advf="$(section "$SKILL" "Adversarial pass" | flat)"
+if printf '%s' "$advf" | grep -q 'can.t be written now, with the diff in view: end with `Question`' \
+   && ! printf '%s' "$advf" | grep -q 'add the line and repeat step 4' \
+   && printf '%s' "$verdictf" | grep -q 'or the run reached step 6 without one'; then
+  ok "ship-feature step 6 ends in Question when the request file has no Invariant line, rather than adding one late"
+else
+  bad "ship-feature step 6 ends in Question when the request file has no Invariant line, rather than adding one late" "$(printf '%s' "$advf" | grep -o 'If it doesn.t,.\{0,100\}')"
+fi
+
 step2f="$(section "$SKILL" "Branch and write failing tests" | flat)"
 if printf '%s' "$step2f" | grep -q 'take at least one fixture from the real file, with the punctuation and lengths it actually holds'; then
   ok "ship-feature step 2 takes a fixture from the product's real stored content"
