@@ -258,15 +258,17 @@ else
   bad "ship-feature step 1 writes a walkthrough for a change to what a user sees or hears" "walkthrough mentions in step 1: $(printf '%s' "$step1f" | grep -o 'walkthrough' | wc -l | tr -d ' ')"
 fi
 
-# A run that reaches step 6 with no Invariant line ends in Question. The line is never written
-# after the build, with the diff in view, and the verdict's Question rule names the case.
+# A run whose request file has no Invariant line ends in Question wherever that is noticed, at
+# review in step 4 or at step 6. The line is never written after the build, with the diff in
+# view, and the verdict's Question rule names the case.
 advf="$(section "$SKILL" "Adversarial pass" | flat)"
-if printf '%s' "$advf" | grep -q 'can.t be written now, with the diff in view: end with `Question`' \
+if printf '%s' "$lane" | grep -q 'If the request file has no `Invariant:` line, no pass in this step counts[^.]*end with `Question`' \
+   && printf '%s' "$advf" | grep -q 'can.t be written now, with the diff in view: end with `Question`' \
    && ! printf '%s' "$advf" | grep -q 'add the line and repeat step 4' \
-   && printf '%s' "$verdictf" | grep -q 'or the run reached step 6 without one'; then
-  ok "ship-feature step 6 ends in Question when the request file has no Invariant line, rather than adding one late"
+   && printf '%s' "$verdictf" | grep -q 'or the run reached step 4 or 6 without one'; then
+  ok "ship-feature ends in Question when the request file has no Invariant line, at step 4 or 6, rather than adding one late"
 else
-  bad "ship-feature step 6 ends in Question when the request file has no Invariant line, rather than adding one late" "$(printf '%s' "$advf" | grep -o 'If it doesn.t,.\{0,100\}')"
+  bad "ship-feature ends in Question when the request file has no Invariant line, at step 4 or 6, rather than adding one late" "step 4: $(printf '%s' "$lane" | grep -c 'If the request file has no `Invariant:` line'); verdict: $(printf '%s' "$verdictf" | grep -o 'or the run reached.\{0,30\}')"
 fi
 
 step2f="$(section "$SKILL" "Branch and write failing tests" | flat)"
