@@ -22,8 +22,8 @@
    case you named. That line is fixed for the run; if it turns out wrong about your
    request, the run ends with a question for you. For a change to what you'd see or hear,
    it also writes a walkthrough of what the user will meet, and stops with a question if
-   that would disappoint. If a `design-eval` skill is installed, a change to what a model
-   is told goes through that skill first.
+   that would disappoint. A change to what a model is told follows the design-eval rules,
+   and goes through the `design-eval` skill first if you have it installed.
 2. Makes a new branch and writes tests that fail first.
 3. Builds the change until the full test suite, typecheck and lint pass.
 4. Has two independent reviewers check the change against your request, and fixes what

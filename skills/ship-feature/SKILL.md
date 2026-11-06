@@ -65,12 +65,12 @@ Also check whether it has already been built.
 - If a source the change requires can't be reached, don't build against a guess. End with
   `Blocked`.
 - If the request names nothing external, say so in one line and carry on.
-- If a `design-eval` skill is installed and the change touches what a model is told, its
-  output schema, or how its output is scored, that skill's rules apply: the field's
-  definition matches the label it is scored against; a prompt change names the error class
-  it fixes, from a change report on the development set; the holdout is run only after the
-  change is pinned by hash, and once per claim; the headline sentence is written before the
-  results return. If `docs/EVAL.md` does not exist, write it with that skill before building.
+- If the change touches what a model is told, its output schema, or how its output is scored,
+  the design-eval rules apply: the field's definition matches the label it is scored against;
+  a prompt change names the error class it fixes, from a change report on the development
+  set; the holdout is run only after the change is pinned by hash, and once per claim; the
+  headline sentence is written before the results return. If a `design-eval` skill is
+  installed and `docs/EVAL.md` does not exist, write it with that skill before building.
 
 If the change alters what a user sees or hears, add to the request file a walkthrough of what
 the user will meet, end to end and in order: each screen, line or sound, with its length. Write

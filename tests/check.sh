@@ -242,13 +242,16 @@ else
   bad "ship-feature's Question rule names an invariant that turned out wrong about the request" "$(printf '%s' "$verdictf" | grep -o '`Question`\*\*:.\{0,120\}')"
 fi
 
-# Rules that lived only in an installed copy, ported so an install can't drop them.
+# Rules that lived only in an installed copy, ported so an install can't drop them. The four
+# design-eval rules hold on any install; only the skill itself, which the harness doesn't ship,
+# is conditional on being installed.
 step1f="$(section "$SKILL" "Check the premise against the live source" | flat)"
-if printf '%s' "$step1f" | grep -q 'If a `design-eval` skill is installed and the change touches what a model is told' \
-   && printf '%s' "$step1f" | grep -q 'pinned by hash' && printf '%s' "$step1f" | grep -q 'docs/EVAL.md'; then
-  ok "ship-feature step 1 applies design-eval, when that skill is installed, to a change in what a model is told"
+if printf '%s' "$step1f" | grep -q 'If the change touches what a model is told, its output schema, or how its output is scored, the design-eval rules apply' \
+   && printf '%s' "$step1f" | grep -q 'pinned by hash' \
+   && printf '%s' "$step1f" | grep -q 'If a `design-eval` skill is installed and `docs/EVAL.md` does not exist, write it with that skill'; then
+  ok "ship-feature step 1 states the design-eval rules for a change in what a model is told, and uses the skill only when installed"
 else
-  bad "ship-feature step 1 applies design-eval, when that skill is installed, to a change in what a model is told" "design-eval mentions in step 1: $(printf '%s' "$step1f" | grep -o 'design-eval' | wc -l | tr -d ' ')"
+  bad "ship-feature step 1 states the design-eval rules for a change in what a model is told, and uses the skill only when installed" "$(printf '%s' "$step1f" | grep -o '.\{0,40\}design-eval.\{0,60\}' | head -2 | tr '\n' ';')"
 fi
 
 if printf '%s' "$step1f" | grep -q 'a walkthrough of what the user will meet, end to end and in order' \
