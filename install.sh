@@ -27,7 +27,7 @@ fi
 
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEST="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
-FILES="skills/start-product/SKILL.md skills/ship-feature/SKILL.md skills/red-team/SKILL.md agents/request-reviewer.md"
+FILES="skills/start-product/SKILL.md skills/ship-feature/SKILL.md skills/red-team/SKILL.md skills/design-eval/SKILL.md agents/request-reviewer.md"
 MIN_VERSION="2.1.271"
 
 # True when version $1 is at least version $2 (dotted numbers only).
@@ -100,10 +100,12 @@ echo
 echo "Last step, by hand: this script does not edit your CLAUDE.md."
 echo "Paste the lines between the markers into $DEST/CLAUDE.md:"
 if [ -f "$DEST/CLAUDE.md" ]; then
-  if grep -q "use the red-team skill" "$DEST/CLAUDE.md"; then
+  if grep -q "use the design-eval skill" "$DEST/CLAUDE.md"; then
     echo "(Your CLAUDE.md already seems to have them. Check it matches.)"
+  elif grep -q "use the red-team skill" "$DEST/CLAUDE.md"; then
+    echo "(Your CLAUDE.md has an earlier version of these lines: add the design-eval line, and check the rest matches.)"
   elif grep -q "use the start-product skill" "$DEST/CLAUDE.md"; then
-    echo "(Your CLAUDE.md has an earlier version of these lines: add the red-team line, and check the rest matches.)"
+    echo "(Your CLAUDE.md has an earlier version of these lines: add the red-team line and the design-eval line, and check the rest matches.)"
   fi
 fi
 echo "----- paste from here -----"

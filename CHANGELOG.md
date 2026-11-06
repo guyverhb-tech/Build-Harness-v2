@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- `design-eval` joins the harness as its fourth skill. Before the first prompt of a build
+  that depends on a model's reading or judgement, it writes `docs/EVAL.md`: the question
+  each output answers, the product's own labels, the sample size the decision needs, a
+  development set and a pinned holdout, an error taxonomy, a pre-registered headline, run
+  records and a stopping rule. Compared with the copy it came from: a light lane for output
+  that is only shown; a taxonomy fitted to the task; the checker-guard rule sits with the
+  run records and the triage question moved to `red-team`'s report; the paired tests are
+  named. `install.sh` installs it, `CLAUDE.md.snippet` carries its workflow line, and the
+  installer tells an upgrading user to add that line. The guards "if a `design-eval` skill is
+  installed" in `ship-feature` and `start-product` are gone, since the harness ships it.
+
 - `ship-feature`, the class, not the instance:
   - Step 0 adds one line headed `Invariant:` to the request file, stating what must hold
     for every input, path and process once the change is in, for example "no rendered
@@ -22,15 +33,15 @@
   - The light-lane rule says a project's own rule covers the number of reviews, and that
     step 6 runs in both lanes and under any project rule.
   - Three rules that had lived only in an installed copy are in the repo, so an install
-    can't drop them: when a `design-eval` skill is installed, a change to what a model is
-    told, its output schema or its scoring follows that skill's rules and writes
-    `docs/EVAL.md` first; a change to what a user sees or hears gets an end-to-end
+    can't drop them: a change to what a model is told, its output schema or its scoring
+    follows `design-eval`'s rules and writes `docs/EVAL.md` first; a change to what a user
+    sees or hears gets an end-to-end
     walkthrough in the request file, and ends in `Question` if it would disappoint; tests
     that read the product's own stored content take a fixture from the real file.
   - `tests/check.sh` checks each of these.
 
-- `start-product`: when a `design-eval` skill is installed, a slice that depends on a model's
-  reading or judgement runs that skill first and commits its `docs/EVAL.md` with the slice.
+- `start-product`: a slice that depends on a model's reading or judgement runs `design-eval`
+  first and commits its `docs/EVAL.md` with the slice.
   Ported from an installed copy so an install can't drop it; `tests/check.sh` checks it.
 
 - `request-reviewer` tests the `Invariant:` line as a requirement, and has an adversarial

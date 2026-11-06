@@ -1,6 +1,6 @@
 # Build Harness v2
 
-Three skills, one reviewer subagent and a few rules on top of stock Claude Code, for solo
+Four skills, one reviewer subagent and a few rules on top of stock Claude Code, for solo
 builders who don't review code line by line.
 
 ## How you use it
@@ -20,6 +20,12 @@ Describe what you want. There are no commands to remember.
   security and engineering, and one reading the product as its audience. It checks every
   serious finding itself, then reports ranked fixes without changing anything. The fixes
   go through `ship-feature`.
+- When a build depends on a model's reading or judgement, `design-eval` runs before the
+  first prompt. It writes `docs/EVAL.md`: the question each output answers, who labels it
+  and how many items settle the decision, the development set and the pinned holdout, the
+  error taxonomy, the headline sentence written before any result, and the stopping rule.
+  `start-product` and `ship-feature` call for it, and a change to what a model is told runs
+  it again.
 
 Each `start-product` or `ship-feature` run ends in a one-line verdict: **Ready to merge**, **Don't merge**, **Question** or
 **Blocked**, with the problem in plain words. What happens next is your call. Typing
@@ -36,7 +42,7 @@ cd Build-Harness-v2
 ./install.sh
 ```
 
-`install.sh` copies the three skills and the reviewer into `~/.claude`. It won't overwrite
+`install.sh` copies the four skills and the reviewer into `~/.claude`. It won't overwrite
 files you already have unless you run `./install.sh --force`, and then it backs them up
 first. It never edits your `CLAUDE.md`. Instead it prints the lines from
 [CLAUDE.md.snippet](CLAUDE.md.snippet) for you to paste into `~/.claude/CLAUDE.md`. Start

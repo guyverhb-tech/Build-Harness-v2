@@ -13,9 +13,9 @@
    architecture and why) and `docs/BACKLOG.md` (small slices, each one something a user
    could see).
 4. It builds the first slice end to end on a new branch. That includes CI, a clean-clone
-   build check, and a launch recipe that later runs use to start the app. If the slice
-   depends on a model's reading or judgement and you have a `design-eval` skill installed,
-   that skill runs first and its eval file is committed with the slice.
+   build check, and a launch recipe that later runs use to start the app. If slice 1 or any
+   backlog slice depends on a model's reading or judgement, `design-eval` runs first and its
+   `docs/EVAL.md` is committed with the slice.
 
 **Adding to it.** Say "next" to build the next slice in the backlog, or describe a change
 ("add a dark mode toggle", "fix the empty-list crash"). The `ship-feature` skill:
@@ -24,8 +24,8 @@
    case you named. That line is fixed for the run; if it turns out wrong about your
    request, the run ends with a question for you. For a change to what you'd see or hear,
    it also writes a walkthrough of what the user will meet, and stops with a question if
-   that would disappoint. If a `design-eval` skill is installed, a change to what a model
-   is told goes through that skill first.
+   that would disappoint. A change to what a model is told, its output schema or its
+   scoring goes through `design-eval` first.
 2. Makes a new branch and writes tests that fail first.
 3. Builds the change until the full test suite, typecheck and lint pass.
 4. Has two independent reviewers check the change against your request, and fixes what
@@ -56,6 +56,25 @@ get in, say "red team it". The `red-team` skill:
 4. Re-runs the evidence for every serious finding itself, and writes a ranked report
    outside the repository.
 5. Changes nothing. Ask for the fixes you want, and each one goes through `ship-feature`.
+
+**Before the first prompt.** When a build depends on a model's reading or judgement, the
+`design-eval` skill runs before any prompt is written. It produces `docs/EVAL.md`:
+1. The question each output answers, with a definition that matches the label it will be
+   scored against. It stops here for you to confirm.
+2. Which outputs need your own labels, and how long marking them takes.
+3. How many labelled items it takes to see the smallest change worth acting on. It stops
+   here with the cost.
+4. A development set to iterate on, a holdout drawn only after the prompt is pinned, and
+   the product's own labels.
+5. An error taxonomy fitted to the task, and one change at a time aimed at the largest
+   class.
+6. The headline sentence, written with blanks before any result returns.
+7. Run records: prompt hash, model, sample, and cost estimated before and measured after.
+8. Your own disagreement rate with the labels, which is the ceiling.
+9. A stopping rule set in advance.
+
+Output that is only shown, with no published figure and no decision resting on it, needs
+only steps 1, 5 and 7.
 
 ## Verdicts
 

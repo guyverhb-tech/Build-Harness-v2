@@ -24,6 +24,9 @@
 - Before a product, demo or site goes in front of its audience for the first time, or
   before a release to that audience changes its headline claims or how it is accessed:
   use the red-team skill, and route its fixes through ship-feature.
+- Any build that depends on a model's reading or judgement (extraction, classification,
+  summaries, scoring, agents): use the design-eval skill before the first prompt, and again
+  when a change touches what a model is told, its output schema or how its output is scored.
 - Edits that can't change behaviour (typos, comments, docs wording, formatting): make them
   directly on a branch, without ship-feature. If unsure whether behaviour could change, use
   ship-feature.
